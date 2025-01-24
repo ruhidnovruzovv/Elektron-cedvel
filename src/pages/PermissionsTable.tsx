@@ -6,6 +6,7 @@ import DeleteModal from '../components/Modals/Permissions/DeletePermissions';
 import usePermissions from '../hooks/usePermissions';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { PiEyeLight } from 'react-icons/pi';
+import { FaRegEdit } from 'react-icons/fa';
 
 interface Permission {
   id: number;
@@ -14,20 +15,23 @@ interface Permission {
 
 const PermissionsTable: React.FC = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [filteredPermissions, setFilteredPermissions] = useState<Permission[]>([]);
   const [selectedPermission, setSelectedPermission] =
     useState<Permission | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const hasAddPermission = usePermissions('permission_add');
-  const hasEditPermission = usePermissions('permission_edit');
-  const hasDeletePermission = usePermissions('permission_delete');
+  const [searchQuery, setSearchQuery] = useState('');
+  const hasAddPermission = usePermissions('add_permission');
+  const hasEditPermission = usePermissions('edit_permission');
+  const hasDeletePermission = usePermissions('delete_permission');
 
   const fetchPermissions = async () => {
     try {
       const response = await get('/api/permissions');
       setPermissions(response.data);
+      setFilteredPermissions(response.data);
     } catch (err: any) {
       console.error('Error fetching permissions:', err);
       setError(err.message || 'An error occurred');
@@ -37,6 +41,14 @@ const PermissionsTable: React.FC = () => {
   useEffect(() => {
     fetchPermissions();
   }, []);
+
+  useEffect(() => {
+    setFilteredPermissions(
+      permissions.filter(permission =>
+        permission.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, permissions]);
 
   const handleAddPermission = async (name: string) => {
     try {
@@ -96,6 +108,13 @@ const PermissionsTable: React.FC = () => {
     <div className="">
       <h2 className="text-2xl font-bold mb-6">İcazələr</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
+      <input
+        type="text"
+        placeholder="İcazələri axtarın..."
+        className="w-full px-3 py-2 mb-4 border rounded-lg"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
       {hasAddPermission && (
         <button
           className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
@@ -106,16 +125,16 @@ const PermissionsTable: React.FC = () => {
       )}
       <table className="min-w-full bg-white">
         <thead>
-          <tr className="bg-[#e3e3e3]  dark:bg-gray-800">
+          <tr className="bg-[#e3e3e3] dark:bg-gray-800">
             <th className="py-2 px-4 border-b">İcazə</th>
             <th className="py-2 px-4 border-b">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {permissions.map((permission) => (
+          {filteredPermissions.map((permission) => (
             <tr
               key={permission.id}
-              className="hover:bg-gray-100  dark:bg-gray-700 transition-all duration-300 ease-linear"
+              className="hover:bg-gray-100 dark:bg-gray-700 transition-all duration-300 ease-linear"
             >
               <td className="py-2 px-4 border-b text-center">
                 {permission.name}
@@ -123,11 +142,10 @@ const PermissionsTable: React.FC = () => {
               <td className="py-2 px-4 border-b text-center">
                 {hasEditPermission && (
                   <button
-                  className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-
+                    className="bg-blue-500 text-white p-2 rounded-lg mr-2"
                     onClick={() => openEditModal(permission)}
                   >
-                    <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                    <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
                   </button>
                 )}
                 {hasDeletePermission && (
@@ -154,8 +172,10 @@ const PermissionsTable: React.FC = () => {
         <EditPermissionModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onConfirm={handleEditPermission}
-          initialData={selectedPermission}
+          onConfirm={(name) =>
+            handleEditPermission(selectedPermission.id, name)
+          }
+          initialName={selectedPermission?.name || ''}
         />
       )}
 

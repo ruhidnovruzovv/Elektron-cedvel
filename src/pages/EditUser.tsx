@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { get, put } from '../api/service';
 import usePermissions from '../hooks/usePermissions';
+import Modal from 'react-modal';
+import '../css/Modal.css';
 
 interface Faculty {
   id: number;
@@ -34,7 +36,8 @@ const EditUser: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [allRoles, setAllRoles] = useState<Role[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const hasEditPermission = usePermissions('user_edit');
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const hasEditPermission = usePermissions('edit_user');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -60,7 +63,7 @@ const EditUser: React.FC = () => {
 
     const fetchFaculties = async () => {
       try {
-        const response = await get('/api/faculty');
+        const response = await get('/api/faculties');
         setFaculties(response.data);
       } catch (err: any) {
         console.error('Error fetching faculties:', err);
@@ -70,7 +73,7 @@ const EditUser: React.FC = () => {
 
     const fetchDepartments = async () => {
       try {
-        const response = await get('/api/department');
+        const response = await get('/api/departments');
         setDepartments(response.data);
       } catch (err: any) {
         console.error('Error fetching departments:', err);
@@ -114,7 +117,13 @@ const EditUser: React.FC = () => {
     } catch (err: any) {
       console.error('Error updating user:', err);
       setError(err.message || 'An error occurred');
+      setIsErrorModalOpen(true);
     }
+  };
+
+  const handleModalClose = () => {
+    setIsErrorModalOpen(false);
+    setError(null);
   };
 
   if (!hasEditPermission) {
@@ -124,6 +133,22 @@ const EditUser: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">İstifadəçini Redaktə Et</h2>
+      <Modal
+        isOpen={isErrorModalOpen}
+        onRequestClose={handleModalClose}
+        contentLabel="Error"
+        className="modal"
+        overlayClassName="modal-overlay"
+      >
+        <h2 className="text-xl font-bold mb-4">Xəta</h2>
+        <p>{error}</p>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded-lg mt-4"
+          onClick={handleModalClose}
+        >
+          Bağla
+        </button>
+      </Modal>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

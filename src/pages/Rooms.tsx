@@ -6,6 +6,8 @@ import DeleteRoomModal from '../components/Modals/Room/DeleteRoom';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
+import { PiEyeLight } from 'react-icons/pi';
+import { useNavigate } from 'react-router-dom';
 
 interface Room {
   id: number;
@@ -19,10 +21,10 @@ interface Room {
     id: number;
     name: string;
   };
-  corps: {
+  corp: {
     id: number;
     name: string;
-  };
+  } | null;
 }
 
 const Rooms: React.FC = () => {
@@ -32,6 +34,7 @@ const Rooms: React.FC = () => {
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
   const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchRooms();
@@ -40,7 +43,7 @@ const Rooms: React.FC = () => {
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const response = await get('/api/room');
+      const response = await get('/api/rooms');
       setRooms(response.data);
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -57,7 +60,7 @@ const Rooms: React.FC = () => {
   const handleDelete = async () => {
     if (selectedRoom) {
       try {
-        await del(`/api/room/${selectedRoom.id}`);
+        await del(`/api/rooms/${selectedRoom.id}`);
         setRooms(rooms.filter((r) => r.id !== selectedRoom.id));
         closeDeleteModal();
       } catch (error) {
@@ -94,18 +97,18 @@ const Rooms: React.FC = () => {
   const handleSaveRoom = async (
     name: string,
     room_capacity: number,
-    department_name: string,
-    room_type_name: string,
-    corps_name: string,
+    department_id: number,
+    room_type_id: number,
+    corp_id: number,
   ) => {
     try {
       if (selectedRoom) {
-        await put(`/api/room/${selectedRoom.id}`, {
+        await put(`/api/rooms/${selectedRoom.id}`, {
           name,
           room_capacity,
-          department_name,
-          room_type_name,
-          corps_name,
+          department_id,
+          room_type_id,
+          corp_id,
         });
         setRooms(
           rooms.map((r) =>
@@ -114,26 +117,27 @@ const Rooms: React.FC = () => {
                   ...r,
                   name,
                   room_capacity,
-                  department: { ...r.department, name: department_name },
-                  room_type: { ...r.room_type, name: room_type_name },
-                  corps: { ...r.corps, name: corps_name },
+                  department: { ...r.department, id: department_id },
+                  room_type: { ...r.room_type, id: room_type_id },
+                  corp: { ...r.corp, id: corp_id },
                 }
               : r,
           ),
         );
+        closeEditRoomModal();
+        fetchRooms(); // Redaktə edildikdən sonra tabloyu yenile
       } else {
-        const response = await post('/api/room', {
+        const response = await post('/api/rooms', {
           name,
           room_capacity,
-          department_name,
-          room_type_name,
-          corps_name,
+          department_id,
+          room_type_id,
+          corp_id,
         });
         setRooms([...rooms, response.data]);
+        closeAddRoomModal();
+        fetchRooms(); // Yeni oda eklendikten sonra tabloyu yenile
       }
-      closeAddRoomModal();
-      closeEditRoomModal();
-      fetchRooms(); // Yeni oda eklendikten sonra tabloyu yenile
     } catch (error) {
       console.error('Error saving room:', error);
     }
@@ -184,18 +188,24 @@ const Rooms: React.FC = () => {
                     {room.room_type.name}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    {room.corps.name}
+                    {room.corp ? room.corp.name : 'N/A'}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
                     <button
-                  className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                  onClick={() => handleEdit(room)}
+                      className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                      onClick={()=>navigate(`/rooms/${room.id}`)}
+                    >
+                      <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                    </button>
+                    <button
+                      className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                      onClick={() => handleEdit(room)}
                     >
                       <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
                     </button>
                     <button
-                  className="bg-red-500 text-white p-2 rounded-lg"
-                  onClick={() => openDeleteModal(room)}
+                      className="bg-red-500 text-white p-2 rounded-lg"
+                      onClick={() => openDeleteModal(room)}
                     >
                       <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
                     </button>
@@ -228,9 +238,9 @@ const Rooms: React.FC = () => {
             id: selectedRoom.id,
             name: selectedRoom.name,
             room_capacity: selectedRoom.room_capacity,
-            department_name: selectedRoom.department.name,
-            room_type_name: selectedRoom.room_type.name,
-            corps_name: selectedRoom.corps.name,
+            department_id: selectedRoom.department.id,
+            room_type_id: selectedRoom.room_type.id,
+            corp_id: selectedRoom.corp ? selectedRoom.corp.id : 0,
           }}
         />
       )}

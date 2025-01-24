@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { get, put } from '../../../api/service';
 
-interface GroupHelpers {
-  group_types: { [key: string]: string };
-  group_levels: { [key: string]: string };
-}
-
 interface Faculty {
   id: number;
   name: string;
@@ -19,6 +14,7 @@ interface Course {
 interface Speciality {
   id: number;
   name: string;
+  faculty_id: number;
 }
 
 interface EditGroupModalProps {
@@ -29,19 +25,19 @@ interface EditGroupModalProps {
     studentAmount: number,
     groupType: number,
     groupLevel: number,
-    faculty: string,
-    course: string,
-    speciality: string,
+    facultyId: number,
+    courseId: number,
+    specialityId: number
   ) => void;
   initialData: {
     id: number;
     name: string;
     studentAmount: number;
-    groupType: string;
-    groupLevel: string;
-    faculty: string;
-    course: string;
-    speciality: string;
+    groupType: number;
+    groupLevel: number;
+    facultyId: number;
+    courseId: number;
+    specialityId: number;
   };
 }
 
@@ -53,29 +49,20 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
 }) => {
   const [name, setName] = useState(initialData.name);
   const [studentAmount, setStudentAmount] = useState(initialData.studentAmount);
-  const [groupType, setGroupType] = useState('');
-  const [groupLevel, setGroupLevel] = useState('');
-  const [faculty, setFaculty] = useState(initialData.faculty);
-  const [course, setCourse] = useState(initialData.course);
-  const [speciality, setSpeciality] = useState(initialData.speciality);
-  const [groupHelpers, setGroupHelpers] = useState<GroupHelpers | null>(null);
+  const [groupType, setGroupType] = useState<number | ''>(initialData.groupType);
+  const [groupLevel, setGroupLevel] = useState<number | ''>(initialData.groupLevel);
+  const [facultyId, setFacultyId] = useState<number | ''>(initialData.facultyId);
+  const [courseId, setCourseId] = useState<number | ''>(initialData.courseId);
+  const [specialityId, setSpecialityId] = useState<number | ''>(initialData.specialityId);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [specialities, setSpecialities] = useState<Speciality[]>([]);
+  const [filteredSpecialities, setFilteredSpecialities] = useState<Speciality[]>([]);
 
   useEffect(() => {
-    const fetchGroupHelpers = async () => {
-      try {
-        const response = await get('/api/group-info');
-        setGroupHelpers(response.data);
-      } catch (error) {
-        console.error('Error fetching group helpers:', error);
-      }
-    };
-
     const fetchFaculties = async () => {
       try {
-        const response = await get('/api/faculty');
+        const response = await get('/api/faculties');
         setFaculties(response.data);
       } catch (error) {
         console.error('Error fetching faculties:', error);
@@ -84,9 +71,8 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
 
     const fetchCourses = async () => {
       try {
-        const response = await get('/api/course');
-        const coursesData = Object.values(response.data.courses);
-        setCourses(coursesData);
+        const response = await get('/api/courses');
+        setCourses(response.data);
       } catch (error) {
         console.error('Error fetching courses:', error);
       }
@@ -94,7 +80,7 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
 
     const fetchSpecialities = async () => {
       try {
-        const response = await get('/api/speciality');
+        const response = await get('/api/specialities');
         setSpecialities(response.data);
       } catch (error) {
         console.error('Error fetching specialities:', error);
@@ -102,7 +88,6 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
     };
 
     if (isOpen) {
-      fetchGroupHelpers();
       fetchFaculties();
       fetchCourses();
       fetchSpecialities();
@@ -110,45 +95,44 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen && groupHelpers) {
+    if (isOpen) {
       setName(initialData.name);
       setStudentAmount(initialData.studentAmount);
-      setFaculty(initialData.faculty);
-      setCourse(initialData.course);
-      setSpeciality(initialData.speciality);
-
-      // groupType ve groupLevel değerlerini eşleştir
-      const groupTypeKey = Object.keys(groupHelpers.group_types).find(
-        (key) => groupHelpers.group_types[key] === initialData.groupType,
-      );
-      const groupLevelKey = Object.keys(groupHelpers.group_levels).find(
-        (key) => groupHelpers.group_levels[key] === initialData.groupLevel,
-      );
-
-      setGroupType(groupTypeKey || '');
-      setGroupLevel(groupLevelKey || '');
+      setGroupType(initialData.groupType);
+      setGroupLevel(initialData.groupLevel);
+      setFacultyId(initialData.facultyId);
+      setCourseId(initialData.courseId);
+      setSpecialityId(initialData.specialityId);
     }
-  }, [isOpen, initialData, groupHelpers]);
+  }, [isOpen, initialData]);
+
+  useEffect(() => {
+    if (facultyId) {
+      setFilteredSpecialities(specialities.filter(speciality => speciality.faculty_id === Number(facultyId)));
+    } else {
+      setFilteredSpecialities([]);
+    }
+  }, [facultyId, specialities]);
 
   const handleSubmit = async () => {
     try {
-      await put(`/api/group/${initialData.id}`, {
+      await put(`/api/groups/${initialData.id}`, {
         name,
         student_amount: studentAmount,
         group_type: Number(groupType),
         group_level: Number(groupLevel),
-        faculty_name: faculty,
-        course_name: course,
-        speciality_name: speciality,
+        faculty_id: Number(facultyId),
+        course_id: Number(courseId),
+        speciality_id: Number(specialityId),
       });
       onSave(
         name,
         studentAmount,
         Number(groupType),
         Number(groupLevel),
-        faculty,
-        course,
-        speciality,
+        Number(facultyId),
+        Number(courseId),
+        Number(specialityId)
       );
       onClose();
     } catch (error) {
@@ -206,15 +190,11 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
             name="groupType"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={groupType}
-            onChange={(e) => setGroupType(e.target.value)}
+            onChange={(e) => setGroupType(Number(e.target.value))}
           >
             <option value="">Seçin</option>
-            {groupHelpers &&
-              Object.entries(groupHelpers.group_types).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value}
-                </option>
-              ))}
+            <option value={1}>Əyani</option>
+            <option value={2}>Qiyabi</option>
           </select>
         </div>
         <div className="mb-4">
@@ -229,15 +209,11 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
             name="groupLevel"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={groupLevel}
-            onChange={(e) => setGroupLevel(e.target.value)}
+            onChange={(e) => setGroupLevel(Number(e.target.value))}
           >
             <option value="">Seçin</option>
-            {groupHelpers &&
-              Object.entries(groupHelpers.group_levels).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value}
-                </option>
-              ))}
+            <option value={1}>Bakalavr</option>
+            <option value={2}>Magistr</option>
           </select>
         </div>
         <div className="mb-4">
@@ -251,12 +227,12 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
             id="faculty"
             name="faculty"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={faculty}
-            onChange={(e) => setFaculty(e.target.value)}
+            value={facultyId}
+            onChange={(e) => setFacultyId(Number(e.target.value))}
           >
             <option value="">Seçin</option>
             {faculties.map((faculty) => (
-              <option key={faculty.id} value={faculty.name}>
+              <option key={faculty.id} value={faculty.id}>
                 {faculty.name}
               </option>
             ))}
@@ -273,12 +249,12 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
             id="course"
             name="course"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={course}
-            onChange={(e) => setCourse(e.target.value)}
+            value={courseId}
+            onChange={(e) => setCourseId(Number(e.target.value))}
           >
             <option value="">Seçin</option>
             {courses.map((course) => (
-              <option key={course.id} value={course.name}>
+              <option key={course.id} value={course.id}>
                 {course.name}
               </option>
             ))}
@@ -295,12 +271,12 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
             id="speciality"
             name="speciality"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={speciality}
-            onChange={(e) => setSpeciality(e.target.value)}
+            value={specialityId}
+            onChange={(e) => setSpecialityId(Number(e.target.value))}
           >
             <option value="">Seçin</option>
-            {specialities.map((speciality) => (
-              <option key={speciality.id} value={speciality.name}>
+            {filteredSpecialities.map((speciality) => (
+              <option key={speciality.id} value={speciality.id}>
                 {speciality.name}
               </option>
             ))}

@@ -23,7 +23,7 @@ const AddSpecialityModal: React.FC<AddSpecialityModalProps> = ({
   useEffect(() => {
     const fetchFaculties = async () => {
       try {
-        const response = await get('/api/faculty');
+        const response = await get('/api/faculties');
         setFaculties(response.data);
       } catch (err: any) {
         console.error('Error fetching faculties:', err);

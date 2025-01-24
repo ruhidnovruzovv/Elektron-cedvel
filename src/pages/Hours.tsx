@@ -27,7 +27,7 @@ const Hours: React.FC = () => {
   const fetchHours = async () => {
     try {
       setLoading(true);
-      const response = await get('/api/hour');
+      const response = await get('/api/hours');
       setHours(response.data);
     } catch (error) {
       console.error('Error fetching hours:', error);
@@ -44,7 +44,7 @@ const Hours: React.FC = () => {
   const handleDelete = async () => {
     if (selectedHour) {
       try {
-        await del(`/api/hour/${selectedHour.id}`);
+        await del(`/api/hours/${selectedHour.id}`);
         setHours(hours.filter((h) => h.id !== selectedHour.id));
         closeDeleteModal();
       } catch (error) {
@@ -81,12 +81,12 @@ const Hours: React.FC = () => {
   const handleSaveHour = async (name: string) => {
     try {
       if (selectedHour) {
-        await put(`/api/hour/${selectedHour.id}`, { name });
+        await put(`/api/hours/${selectedHour.id}`, { name });
         setHours(
           hours.map((h) => (h.id === selectedHour.id ? { ...h, name } : h)),
         );
       } else {
-        const response = await post('/api/hour', { name });
+        const response = await post('/api/hours', { name });
         setHours([...hours, response.data]);
       }
       closeAddHourModal();

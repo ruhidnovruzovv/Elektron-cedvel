@@ -12,7 +12,7 @@ const EditRole: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const EditRole: React.FC = () => {
         const roleData = response.data;
         setName(roleData.name);
         setSelectedPermissions(
-          roleData.permissions.map((p: Permission) => p.name),
+          roleData.permissions.map((p: Permission) => p.id),
         );
       } catch (err: any) {
         console.error('Error fetching role:', err);
@@ -47,8 +47,8 @@ const EditRole: React.FC = () => {
   const handleUpdateRole = async () => {
     try {
       await put(`/api/roles/${id}`, {
-        role_name: name,
-        permissions: selectedPermissions,
+        name: name,
+        permission_ids: selectedPermissions,
       });
       navigate('/role');
     } catch (err: any) {
@@ -57,11 +57,11 @@ const EditRole: React.FC = () => {
     }
   };
 
-  const handlePermissionChange = (permissionName: string) => {
+  const handlePermissionChange = (permissionId: number) => {
     setSelectedPermissions((prevSelected) =>
-      prevSelected.includes(permissionName)
-        ? prevSelected.filter((name) => name !== permissionName)
-        : [...prevSelected, permissionName],
+      prevSelected.includes(permissionId)
+        ? prevSelected.filter((id) => id !== permissionId)
+        : [...prevSelected, permissionId],
     );
   };
 
@@ -119,8 +119,8 @@ const EditRole: React.FC = () => {
                     type="checkbox"
                     id={`permission-${permission.id}`}
                     className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                    checked={selectedPermissions.includes(permission.name)}
-                    onChange={() => handlePermissionChange(permission.name)}
+                    checked={selectedPermissions.includes(permission.id)}
+                    onChange={() => handlePermissionChange(permission.id)}
                   />
                   <span className="ml-2">{permission.name}</span>
                 </label>

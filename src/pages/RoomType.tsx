@@ -29,7 +29,7 @@ const RoomType: React.FC = () => {
   const fetchRoomTypes = async () => {
     try {
       setLoading(true);
-      const response = await get('/api/roomtype');
+      const response = await get('/api/room_types');
       setRoomTypes(response.data);
     } catch (error) {
       console.error('Error fetching room types:', error);
@@ -46,7 +46,7 @@ const RoomType: React.FC = () => {
   const handleDelete = async () => {
     if (selectedRoomType) {
       try {
-        await del(`/api/roomtype/${selectedRoomType.id}`);
+        await del(`/api/room_types/${selectedRoomType.id}`);
         setRoomTypes(roomTypes.filter((rt) => rt.id !== selectedRoomType.id));
         closeDeleteModal();
       } catch (error) {
@@ -83,14 +83,14 @@ const RoomType: React.FC = () => {
   const handleSaveRoomType = async (name: string) => {
     try {
       if (selectedRoomType) {
-        await put(`/api/roomtype/${selectedRoomType.id}`, { name });
+        await put(`/api/room_types/${selectedRoomType.id}`, { name });
         setRoomTypes(
           roomTypes.map((rt) =>
             rt.id === selectedRoomType.id ? { ...rt, name } : rt,
           ),
         );
       } else {
-        const response = await post('/api/roomtype', { name });
+        const response = await post('/api/room_types', { name });
         setRoomTypes([...roomTypes, response.data]);
       }
       closeAddRoomTypeModal();

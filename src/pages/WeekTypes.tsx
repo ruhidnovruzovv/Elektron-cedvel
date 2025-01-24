@@ -29,7 +29,7 @@ const WeekTypes: React.FC = () => {
   const fetchWeekTypes = async () => {
     try {
       setLoading(true);
-      const response = await get('/api/weektype');
+      const response = await get('/api/week_types');
       setWeekTypes(response.data);
     } catch (error) {
       console.error('Error fetching week types:', error);
@@ -46,7 +46,7 @@ const WeekTypes: React.FC = () => {
   const handleDelete = async () => {
     if (selectedWeekType) {
       try {
-        await del(`/api/weektype/${selectedWeekType.id}`);
+        await del(`/api/week_types/${selectedWeekType.id}`);
         setWeekTypes(weekTypes.filter((wt) => wt.id !== selectedWeekType.id));
         closeDeleteModal();
       } catch (error) {
@@ -83,14 +83,14 @@ const WeekTypes: React.FC = () => {
   const handleSaveWeekType = async (name: string) => {
     try {
       if (selectedWeekType) {
-        await put(`/api/weektype/${selectedWeekType.id}`, { name });
+        await put(`/api/week_types/${selectedWeekType.id}`, { name });
         setWeekTypes(
           weekTypes.map((wt) =>
             wt.id === selectedWeekType.id ? { ...wt, name } : wt,
           ),
         );
       } else {
-        const response = await post('/api/weektype', { name });
+        const response = await post('/api/week_types', { name });
         setWeekTypes([...weekTypes, response.data]);
       }
       closeAddWeekTypeModal();

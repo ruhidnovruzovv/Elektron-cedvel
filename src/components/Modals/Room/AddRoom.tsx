@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { get } from '../../../api/service';
+import { get, post } from '../../../api/service';
 
 interface Department {
   id: number;
@@ -11,7 +11,7 @@ interface RoomType {
   name: string;
 }
 
-interface Corps {
+interface Corp {
   id: number;
   name: string;
 }
@@ -22,9 +22,9 @@ interface AddRoomModalProps {
   onSave: (
     name: string,
     room_capacity: number,
-    department_name: string,
-    room_type_name: string,
-    corps_name: string,
+    department_id: number,
+    room_type_id: number,
+    corp_id: number,
   ) => void;
 }
 
@@ -35,17 +35,17 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [roomCapacity, setRoomCapacity] = useState<number | null>(null);
-  const [departmentName, setDepartmentName] = useState<string | null>(null);
-  const [roomTypeName, setRoomTypeName] = useState<string | null>(null);
-  const [corpsName, setCorpsName] = useState<string | null>(null);
+  const [departmentId, setDepartmentId] = useState<number | ''>('');
+  const [roomTypeId, setRoomTypeId] = useState<number | ''>('');
+  const [corpId, setCorpId] = useState<number | ''>('');
   const [departments, setDepartments] = useState<Department[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [corps, setCorps] = useState<Corps[]>([]);
+  const [corps, setCorps] = useState<Corp[]>([]);
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await get('/api/department');
+        const response = await get('/api/departments');
         setDepartments(response.data);
       } catch (error) {
         console.error('Error fetching departments:', error);
@@ -54,7 +54,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 
     const fetchRoomTypes = async () => {
       try {
-        const response = await get('/api/roomtype');
+        const response = await get('/api/room_types');
         setRoomTypes(response.data);
       } catch (error) {
         console.error('Error fetching room types:', error);
@@ -77,27 +77,29 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     }
   }, [isOpen]);
 
-  const handleSubmit = () => {
+
+  const handleSubmit = async () => {
     if (
-      departmentName !== null &&
-      roomTypeName !== null &&
-      corpsName !== null &&
+      departmentId !== '' &&
+      roomTypeId !== '' &&
+      corpId !== '' &&
       roomCapacity !== null
     ) {
-      onSave(name, roomCapacity, departmentName, roomTypeName, corpsName);
+      onSave(name, roomCapacity, Number(departmentId), Number(roomTypeId), Number(corpId));
       setName('');
       setRoomCapacity(null);
-      setDepartmentName(null);
-      setRoomTypeName(null);
-      setCorpsName(null);
+      setDepartmentId('');
+      setRoomTypeId('');
+      setCorpId('');
+      onClose();
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-2/3 md:w-1/2 lg:w-1/3 overflow-y-auto max-h-full">
         <h2 className="text-xl font-bold mb-4">Yeni Otaq Əlavə Et</h2>
         <div className="mb-4">
           <label
@@ -110,7 +112,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
             id="name"
             name="name"
             type="text"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -126,7 +128,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
             id="roomCapacity"
             name="roomCapacity"
             type="number"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={roomCapacity || ''}
             onChange={(e) => setRoomCapacity(Number(e.target.value))}
           />
@@ -141,13 +143,13 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
           <select
             id="department"
             name="department"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={departmentName || ''}
-            onChange={(e) => setDepartmentName(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            value={departmentId}
+            onChange={(e) => setDepartmentId(Number(e.target.value))}
           >
             <option value="">Seçin</option>
             {departments.map((department) => (
-              <option key={department.id} value={department.name}>
+              <option key={department.id} value={department.id}>
                 {department.name}
               </option>
             ))}
@@ -163,13 +165,13 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
           <select
             id="roomType"
             name="roomType"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={roomTypeName || ''}
-            onChange={(e) => setRoomTypeName(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            value={roomTypeId}
+            onChange={(e) => setRoomTypeId(Number(e.target.value))}
           >
             <option value="">Seçin</option>
             {roomTypes.map((roomType) => (
-              <option key={roomType.id} value={roomType.name}>
+              <option key={roomType.id} value={roomType.id}>
                 {roomType.name}
               </option>
             ))}
@@ -177,21 +179,21 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
         </div>
         <div className="mb-4">
           <label
-            htmlFor="corps"
+            htmlFor="corp"
             className="block text-sm font-medium text-gray-700"
           >
             Korpus
           </label>
           <select
-            id="corps"
-            name="corps"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={corpsName || ''}
-            onChange={(e) => setCorpsName(e.target.value)}
+            id="corp"
+            name="corp"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            value={corpId}
+            onChange={(e) => setCorpId(Number(e.target.value))}
           >
             <option value="">Seçin</option>
             {corps.map((corp) => (
-              <option key={corp.id} value={corp.name}>
+              <option key={corp.id} value={corp.id}>
                 {corp.name}
               </option>
             ))}

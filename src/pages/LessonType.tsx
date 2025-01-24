@@ -27,7 +27,7 @@ const Lessons: React.FC = () => {
 
   const fetchLessons = async () => {
     try {
-      const response = await get('/api/lessontype');
+      const response = await get('/api/lesson_types');
       setLessons(response.data);
     } catch (error) {
       console.error('Error fetching lessons:', error);
@@ -37,7 +37,7 @@ const Lessons: React.FC = () => {
   const handleDelete = async () => {
     if (selectedLesson) {
       try {
-        await del(`/api/lessontype/${selectedLesson.id}`);
+        await del(`/api/lesson_types/${selectedLesson.id}`);
         setLessons(lessons.filter((lesson) => lesson.id !== selectedLesson.id));
         closeDeleteModal();
       } catch (error) {
@@ -80,14 +80,14 @@ const Lessons: React.FC = () => {
   const handleSaveLesson = async (name: string) => {
     try {
       if (selectedLesson) {
-        await put(`/api/lessontype/${selectedLesson.id}`, { name });
+        await put(`/api/lesson_types/${selectedLesson.id}`, { name });
         setLessons(
           lessons.map((lesson) =>
             lesson.id === selectedLesson.id ? { ...lesson, name } : lesson,
           ),
         );
       } else {
-        await post('/api/lessontype', { name });
+        await post('/api/lesson_types', { name });
         fetchLessons(); // Yeni ders eklendikten sonra tabloyu yenile
       }
       closeAddLessonModal();

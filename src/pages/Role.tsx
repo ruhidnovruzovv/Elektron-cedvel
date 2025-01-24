@@ -4,7 +4,7 @@ import { get, del } from '../api/service';
 import DeleteModal from '../components/Modals/Role/DeleteRoleModal';
 import PermissionsModal from '../components/Modals/Permissions/RolePermissionModal';
 import usePermissions from '../hooks/usePermissions';
-import { AiFillEye, AiOutlineDelete, AiOutlineEye } from 'react-icons/ai';
+import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
 import { PiEyeLight } from 'react-icons/pi';
 
@@ -26,9 +26,10 @@ const RoleTable: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const hasDeleteRole = usePermissions('role_delete');
-  const hasEditRole = usePermissions('role_edit');
-  const hasAddRole = usePermissions('role_add');
+  const hasDeleteRole = usePermissions('delete_role');
+  const hasEditRole = usePermissions('edit_role');
+  const hasAddRole = usePermissions('add_role');
+  const hasViewRole = usePermissions('view_role');
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -83,7 +84,7 @@ const RoleTable: React.FC = () => {
       )}
       <table className="min-w-full bg-white">
         <thead>
-          <tr className="bg-[#e3e3e3]  dark:bg-gray-800">
+          <tr className="bg-[#e3e3e3] dark:bg-gray-800">
             <th className="py-2 px-4 border-b">Rol</th>
             <th className="py-2 px-4 border-b">İcazələr</th>
             <th className="py-2 px-4 border-b">Actions</th>
@@ -93,7 +94,7 @@ const RoleTable: React.FC = () => {
           {roles.map((role) => (
             <tr
               key={role.id}
-              className="hover:bg-gray-100  dark:bg-gray-700 transition-all duration-300 ease-linear"
+              className="hover:bg-gray-100 dark:bg-gray-700 transition-all duration-300 ease-linear"
             >
               <td className="py-2 px-4 border-b text-center">{role.name}</td>
               <td className="py-2 px-4 border-b text-center">
@@ -102,26 +103,28 @@ const RoleTable: React.FC = () => {
               <td className="py-2 px-4 border-b text-center">
                 {hasEditRole && (
                   <button
-                  className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                    className="bg-blue-500 text-white p-2 rounded-lg mr-2"
                     onClick={() => navigate(`/edit-role/${role.id}`)}
                   >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                    <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
                   </button>
                 )}
                 {hasDeleteRole && (
                   <button
-                  className="bg-red-500 text-white p-2 mr-2 rounded-lg"
+                    className="bg-red-500 text-white p-2 mr-2 rounded-lg"
                     onClick={() => openDeleteModal(role)}
                   >
                     <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
                   </button>
                 )}
-                <button
-                  className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
-                  onClick={() => openPermissionsModal(role)}
-                >
-                  <PiEyeLight className="w-3 md:w-5 h-3 md:h-5"/>
+                {hasViewRole && (
+                  <button
+                    className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                    onClick={() => openPermissionsModal(role)}
+                  >
+                    <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
                   </button>
+                )}
               </td>
             </tr>
           ))}

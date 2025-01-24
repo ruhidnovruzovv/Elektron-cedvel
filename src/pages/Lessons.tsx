@@ -31,7 +31,7 @@ const Lessons: React.FC = () => {
   const fetchLessons = async () => {
     try {
       setLoading(true);
-      const response = await get('/api/lesson');
+      const response = await get('/api/disciplines');
       setLessons(response.data);
     } catch (error) {
       console.error('Error fetching lessons:', error);
@@ -48,7 +48,7 @@ const Lessons: React.FC = () => {
   const handleDelete = async () => {
     if (selectedLesson) {
       try {
-        await del(`/api/lesson/${selectedLesson.id}`);
+        await del(`/api/disciplines/${selectedLesson.id}`);
         setLessons(lessons.filter((l) => l.id !== selectedLesson.id));
         closeDeleteModal();
       } catch (error) {
@@ -82,12 +82,12 @@ const Lessons: React.FC = () => {
     setIsEditLessonModalOpen(false);
   };
 
-  const handleSaveLesson = async (name: string, department_name: string) => {
+  const handleSaveLesson = async (name: string, department_id: number) => {
     try {
       if (selectedLesson) {
-        await put(`/api/lesson/${selectedLesson.id}`, {
+        await put(`/api/disciplines/${selectedLesson.id}`, {
           name,
-          department_name,
+          department_id,
         });
         setLessons(
           lessons.map((l) =>
@@ -95,13 +95,13 @@ const Lessons: React.FC = () => {
               ? {
                   ...l,
                   name,
-                  department: { ...l.department, name: department_name },
+                  department: { ...l.department, id: department_id },
                 }
               : l,
           ),
         );
       } else {
-        const response = await post('/api/lesson', { name, department_name });
+        const response = await post('/api/disciplines', { name, department_id });
         setLessons([...lessons, response.data]);
       }
       closeAddLessonModal();
@@ -114,12 +114,12 @@ const Lessons: React.FC = () => {
 
   return (
     <div className="">
-      <h2 className="text-lg md:text-2xl font-bold mb-4 md:mb-6">Dərslər</h2>
+      <h2 className="text-lg md:text-2xl font-bold mb-4 md:mb-6">Fənnlər</h2>
       <button
         className="bg-green-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg mb-4"
         onClick={openAddLessonModal}
       >
-        Yeni Dərs Əlavə Et
+        Yeni Fənn Əlavə Et
       </button>
       <div className="overflow-x-auto">
         {loading ? (
@@ -190,7 +190,7 @@ const Lessons: React.FC = () => {
           initialData={{
             id: selectedLesson.id,
             name: selectedLesson.name,
-            department_name: selectedLesson.department.name,
+            department_id: selectedLesson.department.id,
           }}
         />
       )}

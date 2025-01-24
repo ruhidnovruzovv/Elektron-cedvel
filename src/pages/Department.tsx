@@ -157,7 +157,7 @@ const Departments: React.FC = () => {
             <thead>
               <tr className="bg-gray-200 dark:bg-gray-800">
                 <th className="py-2 px-4 border-b">Ad</th>
-                <th className="py-2 px-4 border-b">Fənlər</th>
+                <th className="py-2 px-4 border-b">Fakültə</th>
                 <th className="py-2 px-4 border-b">Actions</th>
               </tr>
             </thead>
@@ -171,13 +171,12 @@ const Departments: React.FC = () => {
                     {department.name}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    {department.disciplines.length > 0 ? (
+                    {department.faculty.name ? (
                       <>
-                        {department.disciplines[0].name}
-                        {department.disciplines.length > 1 && '...'}
+                        {department.faculty.name}
                       </>
                     ) : (
-                      'Fənn yoxdur'
+                      '-'
                     )}
                   </td>
                   <td className="py-2 px-4 border-b">

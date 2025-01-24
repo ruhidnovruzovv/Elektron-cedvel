@@ -5,17 +5,45 @@ import EditGroupModal from '../components/Modals/Group/EditGroup';
 import DeleteGroupModal from '../components/Modals/Group/DeleteGroup';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
+import { PiEyeLight } from 'react-icons/pi';
+import { useNavigate } from 'react-router-dom';
 
 interface Group {
   id: number;
   name: string;
   student_amount: number;
-  group_type_label: string;
-  group_level_label: string;
-  faculty_name: string;
-  speciality_name: string;
-  course_name: string;
+  group_type: number;
+  faculty_id: number;
+  course_id: number;
+  speciality_id: number;
+  created_at: string | null;
+  updated_at: string | null;
+  status: number;
+  group_level: number;
+  faculty: {
+    id: number;
+    name: string;
+    created_at: string | null;
+    updated_at: string | null;
+    status: number;
+  };
+  speciality: {
+    id: number;
+    name: string;
+    created_at: string | null;
+    updated_at: string | null;
+    faculty_id: number;
+    status: number;
+  };
+  course: {
+    id: number;
+    name: string;
+    created_at: string | null;
+    updated_at: string | null;
+    status: number;
+  };
 }
+
 
 const Groups: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -23,6 +51,7 @@ const Groups: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchGroups();
@@ -30,7 +59,7 @@ const Groups: React.FC = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await get('/api/group');
+      const response = await get('/api/groups');
       setGroups(response.data);
     } catch (error) {
       console.error('Error fetching groups:', error);
@@ -45,7 +74,7 @@ const Groups: React.FC = () => {
   const handleDelete = async () => {
     if (selectedGroup) {
       try {
-        await del(`/api/group/${selectedGroup.id}`);
+        await del(`/api/groups/${selectedGroup.id}`);
         setGroups(groups.filter((group) => group.id !== selectedGroup.id));
         closeDeleteModal();
       } catch (error) {
@@ -83,6 +112,28 @@ const Groups: React.FC = () => {
     fetchGroups(); // Yeni grup eklendikten veya güncellendikten sonra tabloyu yenile
   };
 
+  const getGroupTypeLabel = (type: number) => {
+    switch (type) {
+      case 1:
+        return 'Əyani';
+      case 2:
+        return 'Qiyabi';
+      default:
+        return '';
+    }
+  };
+
+  const getGroupLevelLabel = (level: number) => {
+    switch (level) {
+      case 1:
+        return 'Bakalavr';
+      case 2:
+        return 'Magistr';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Qruplar</h2>
@@ -117,22 +168,28 @@ const Groups: React.FC = () => {
                   {group.student_amount}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {group.group_type_label}
+                  {getGroupTypeLabel(group.group_type)}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {group.group_level_label}
+                  {getGroupLevelLabel(group.group_level)}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {group.faculty_name}
+                  {group.faculty.name}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {group.speciality_name}
+                  {group.speciality.name}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  {group.course_name}
+                  {group.course.name}
                 </td>
                 <td className="py-2 px-4 border-b text-center">
-                  <div className="grid grid-cols-1 md:grid-cols-2 items-center md:justify-center gap-2">
+                <div className="flex flex-col items-center md:flex-row md:justify-center gap-2">
+                <button
+                      className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                      onClick={() => navigate(`/groups/${group.id}`)}
+                      >
+                      <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                    </button>
                     <button
                       className="bg-blue-500 text-white p-2 rounded-lg mr-2"
                       onClick={() => handleEdit(group)}
@@ -174,11 +231,11 @@ const Groups: React.FC = () => {
             id: selectedGroup.id,
             name: selectedGroup.name,
             studentAmount: selectedGroup.student_amount,
-            groupType: selectedGroup.group_type_label,
-            groupLevel: selectedGroup.group_level_label,
-            faculty: selectedGroup.faculty_name,
-            course: selectedGroup.course_name,
-            speciality: selectedGroup.speciality_name,
+            groupType: selectedGroup.group_type,
+            groupLevel: selectedGroup.group_level,
+            facultyId: selectedGroup.faculty_id,
+            courseId: selectedGroup.course_id,
+            specialityId: selectedGroup.speciality_id,
           }}
         />
       )}

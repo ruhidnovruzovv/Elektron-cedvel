@@ -8,7 +8,6 @@ import EditCourseModal from '../components/Modals/Course/CourseEditModal';
 import DeleteCourseModal from '../components/Modals/Course/CourseDeleteModal';
 import { ClipLoader } from 'react-spinners';
 import '../components/Modals/Modal.css';
-import { PiEyeLight } from 'react-icons/pi';
 
 Modal.setAppElement('#root'); // Modalın accessibility üçün kök elementi təyin edin
 
@@ -18,7 +17,6 @@ const CoursePage: React.FC = () => {
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState(false);
   const [isDeleteCourseModalOpen, setIsDeleteCourseModalOpen] = useState(false);
-  const [isSpecialitiesModalOpen, setIsSpecialitiesModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -28,8 +26,8 @@ const CoursePage: React.FC = () => {
   const fetchCourses = async () => {
     setIsLoading(true);
     try {
-      const response = await get('/api/course');
-      const courseData = Object.values(response.data.courses);
+      const response = await get('/api/courses');
+      const courseData = response.data;
       setCourses(courseData);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -68,20 +66,10 @@ const CoursePage: React.FC = () => {
     fetchCourses(); // Kursları yenidən yüklə
   };
 
-  const openSpecialitiesModal = (course: any) => {
-    setSelectedCourse(course);
-    setIsSpecialitiesModalOpen(true);
-  };
-
-  const closeSpecialitiesModal = () => {
-    setIsSpecialitiesModalOpen(false);
-    setSelectedCourse(null);
-  };
-
-  const handleSaveCourse = async (name: string, specialityIds: number[]) => {
+  const handleSaveCourse = async (name: string) => {
     try {
-      const newCourse = { name, specialty_id: specialityIds };
-      await post('/api/course', newCourse);
+      const newCourse = { name };
+      await post('/api/courses', newCourse);
       closeAddCourseModal();
       fetchCourses(); // Kursları yenidən yüklə
     } catch (error) {
@@ -89,14 +77,10 @@ const CoursePage: React.FC = () => {
     }
   };
 
-  const handleEditCourse = async (
-    id: number,
-    name: string,
-    specialityIds: number[],
-  ) => {
+  const handleEditCourse = async (id: number, name: string) => {
     try {
-      const updatedCourse = { name, specialty_id: specialityIds };
-      await put(`/api/course/${id}`, updatedCourse);
+      const updatedCourse = { name };
+      await put(`/api/courses/${id}`, updatedCourse);
       closeEditCourseModal();
       fetchCourses(); // Kursları yenidən yüklə
     } catch (error) {
@@ -106,7 +90,7 @@ const CoursePage: React.FC = () => {
 
   const handleDeleteCourse = async (id: number) => {
     try {
-      await del(`/api/course/${id}`);
+      await del(`/api/courses/${id}`);
       closeDeleteCourseModal();
       fetchCourses(); // Kursları yenidən yüklə
     } catch (error) {
@@ -132,7 +116,6 @@ const CoursePage: React.FC = () => {
           <thead>
             <tr className="bg-gray-200 dark:bg-gray-800">
               <th className="py-2 px-4 border-b">Ad</th>
-              <th className="py-2 px-4 border-b">İxtisaslar</th>
               <th className="py-2 px-4 border-b">Actions</th>
             </tr>
           </thead>
@@ -144,14 +127,6 @@ const CoursePage: React.FC = () => {
               >
                 <td className="py-2 px-4 border-b text-center">
                   {course.name}
-                </td>
-                <td className="py-2 px-4 border-b text-center">
-                  <button
-                    className="<PiEyeLight /> text-yellow-600 text-lg  px-4 py-2 rounded-lg"
-                    onClick={() => openSpecialitiesModal(course)}
-                  >
-                    <PiEyeLight />
-                  </button>
                 </td>
                 <td className="py-2 px-4 border-b text-center">
                   <button
@@ -192,39 +167,6 @@ const CoursePage: React.FC = () => {
         onConfirm={handleDeleteCourse}
         course={selectedCourse}
       />
-
-      <Modal
-        isOpen={isSpecialitiesModalOpen}
-        onRequestClose={closeSpecialitiesModal}
-        contentLabel="İxtisaslar"
-        className="modal"
-        overlayClassName="overlay"
-      >
-        <h2 className="text-2xl font-bold mb-4">İxtisaslar</h2>
-        {selectedCourse && (
-          <ul>
-            {Array.isArray(selectedCourse.specialities)
-              ? selectedCourse.specialities.map((speciality, index) => (
-                  <li key={index} className="mb-2">
-                    {speciality}
-                  </li>
-                ))
-              : Object.values(selectedCourse.specialities).map(
-                  (speciality, index) => (
-                    <li key={index} className="mb-2">
-                      {speciality}
-                    </li>
-                  ),
-                )}
-          </ul>
-        )}
-        <button
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
-          onClick={closeSpecialitiesModal}
-        >
-          Bağla
-        </button>
-      </Modal>
     </div>
   );
 };

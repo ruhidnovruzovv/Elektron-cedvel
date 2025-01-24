@@ -31,9 +31,10 @@ const UserTable: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Loading state
   const profile = useProfile();
-  const hasDeletePermission = usePermissions('user_delete');
-  const hasEditPermission = usePermissions('user_edit');
-  const hasAddPermission = usePermissions('user_add');
+  const hasDeletePermission = usePermissions('delete_user');
+  const hasEditPermission = usePermissions('edit_user');
+  const hasAddPermission = usePermissions('add_user');
+  const hasViewPermission = usePermissions('view_user');
 
   const navigate = useNavigate();
 
@@ -175,12 +176,16 @@ const UserTable: React.FC = () => {
                 {user.roles.join(', ')}
               </td>
               <td className="py-2 px-4 border-b flex justify-center">
-                <button
-                  className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
-                  onClick={() => handleView(user.id)}
-                >
-                  <PiEyeLight className="w-3 md:w-5 h-3 md:h-5"/>
-                </button>
+                {
+                  hasViewPermission && (
+                    <button
+                    className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                    onClick={() => handleView(user.id)}
+                  >
+                    <PiEyeLight className="w-3 md:w-5 h-3 md:h-5"/>
+                  </button>
+                  )
+                }
                 {hasEditPermission && (
                   <button
                     className="bg-blue-500 text-white p-2 rounded-lg mr-2"

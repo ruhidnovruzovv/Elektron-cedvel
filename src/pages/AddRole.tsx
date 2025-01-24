@@ -10,7 +10,7 @@ interface Permission {
 const AddRole: React.FC = () => {
   const [name, setName] = useState('');
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -31,8 +31,8 @@ const AddRole: React.FC = () => {
   const handleAddRole = async () => {
     try {
       await post('/api/roles', {
-        role_name: name,
-        permissions: selectedPermissions, // Permissions as names
+        name: name,
+        permissions: selectedPermissions, // Permissions as IDs
       });
       navigate('/role');
     } catch (err: any) {
@@ -41,11 +41,11 @@ const AddRole: React.FC = () => {
     }
   };
 
-  const handlePermissionChange = (permissionName: string) => {
+  const handlePermissionChange = (permissionId: number) => {
     setSelectedPermissions((prevSelected) =>
-      prevSelected.includes(permissionName)
-        ? prevSelected.filter((name) => name !== permissionName)
-        : [...prevSelected, permissionName]
+      prevSelected.includes(permissionId)
+        ? prevSelected.filter((id) => id !== permissionId)
+        : [...prevSelected, permissionId]
     );
   };
 
@@ -99,8 +99,8 @@ const AddRole: React.FC = () => {
                   <input
                     type="checkbox"
                     className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
-                    checked={selectedPermissions.includes(permission.name)}
-                    onChange={() => handlePermissionChange(permission.name)}
+                    checked={selectedPermissions.includes(permission.id)}
+                    onChange={() => handlePermissionChange(permission.id)}
                   />
                   <span className="ml-2">{permission.name}</span>
                 </label>

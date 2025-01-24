@@ -23,7 +23,6 @@ import PermissionsTable from './pages/PermissionsTable';
 import FacultyPage from './pages/Faculty';
 import DepartmentPage from './pages/Department';
 import UserViewPage from './pages/UserViewPage';
-import CourseSpecialitiesPage from './pages/CourseSpecialitiesPage';
 import LessonsType from './pages/LessonType';
 import Groups from './pages/Groups';
 import Corps from './pages/Corps';
@@ -40,6 +39,10 @@ import CoursePage from './pages/CoursePage';
 import FacultyDetails from './pages/FacultyDetails';
 import DeparmentDetails from './pages/DeparmentDetails';
 import Specialities from './pages/Specialities';
+import SpecialityDetails from './pages/SpecialityDetails';
+import GroupDetails from './pages/GroupDetails';
+import RoomDetails from './pages/RoomDetails';
+import Forbidden from './pages/Common/Forbidden';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -69,6 +72,7 @@ function App() {
               <ProtectedRoute>
                 <DefaultLayout>
                   <Routes>
+                    <Route path='/403' element={<Forbidden />} />
                     <Route index element={<ECommerce />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="forms/form-elements" />
@@ -76,7 +80,7 @@ function App() {
                     <Route
                       path="users"
                       element={
-                        <ProtectedRoute requiredPermission="user_show">
+                        <ProtectedRoute requiredPermission="view_users">
                           <UsersTable />
                         </ProtectedRoute>
                       }
@@ -84,7 +88,7 @@ function App() {
                     <Route
                       path="add-new-user"
                       element={
-                        <ProtectedRoute requiredPermission="user_add">
+                        <ProtectedRoute requiredPermission="add_user">
                           <AddNewUser />
                         </ProtectedRoute>
                       }
@@ -92,7 +96,7 @@ function App() {
                     <Route
                       path="edit-user/:id"
                       element={
-                        <ProtectedRoute requiredPermission="user_edit">
+                        <ProtectedRoute requiredPermission="edit_user">
                           <EditUser />
                         </ProtectedRoute>
                       }
@@ -100,7 +104,7 @@ function App() {
                     <Route
                       path="role"
                       element={
-                        <ProtectedRoute requiredPermission="role_show">
+                        <ProtectedRoute requiredPermission="view_roles">
                           <Role />
                         </ProtectedRoute>
                       }
@@ -108,7 +112,7 @@ function App() {
                     <Route
                       path="add-role"
                       element={
-                        <ProtectedRoute requiredPermission="role_add">
+                        <ProtectedRoute requiredPermission="add_role">
                           <AddRole />
                         </ProtectedRoute>
                       }
@@ -116,7 +120,7 @@ function App() {
                     <Route
                       path="edit-role/:id"
                       element={
-                        <ProtectedRoute requiredPermission="role_edit">
+                        <ProtectedRoute requiredPermission="edit_role">
                           <EditRole />
                         </ProtectedRoute>
                       }
@@ -124,36 +128,187 @@ function App() {
                     <Route
                       path="permissions"
                       element={
-                        <ProtectedRoute requiredPermission="permission_show">
+                        <ProtectedRoute requiredPermission="view_permissions">
                           <PermissionsTable />
                         </ProtectedRoute>
                       }
                     />
                     <Route path="settings" element={<Settings />} />
-                    <Route path="faculty" element={<FacultyPage />} />
-                    <Route path="department" element={<DepartmentPage />} />
-                    <Route path="specialities" element={<Specialities />} />
-                    <Route path="view-user/:id" element={<UserViewPage />} />
-                    <Route path="course" element={<CoursePage />} />
-                    <Route path="lesson-type" element={<LessonsType />} />
-                    <Route path="faculty/:id" element={<FacultyDetails />} />
-                    <Route path="departments/:id" element={<DeparmentDetails />} />
-                    <Route path="groups" element={<Groups />} />
-                    <Route path="corps" element={<Corps />} />
-                    <Route path="room-types" element={<RoomType />} />
-                    <Route path="hours" element={<Hours />} />
-                    <Route path="lessons" element={<Lessons />} />
-                    <Route path="rooms" element={<Rooms />} />
-                    <Route path="weeks-types" element={<WeekTypes />} />
-                    <Route path="smestrs" element={<Smestrs />} />
-                    <Route path="schedule" element={<Schedule />} />
+                    <Route
+                      path="faculty"
+                      element={
+                        <ProtectedRoute requiredPermission="view_faculties">
+                          <FacultyPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="department"
+                      element={
+                        <ProtectedRoute requiredPermission="view_departments">
+                          <DepartmentPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="specialities"
+                      element={
+                        <ProtectedRoute requiredPermission="view_specialities">
+                          <Specialities />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="view-user/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_user">
+                          <UserViewPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="course"
+                      element={
+                        <ProtectedRoute requiredPermission="view_courses">
+                          <CoursePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="lesson-type"
+                      element={
+                        <ProtectedRoute requiredPermission="view_lesson_types">
+                          <LessonsType />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="faculty/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_faculty">
+                          <FacultyDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="groups/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_group">
+                          <GroupDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="rooms/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_room">
+                          <RoomDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="specialities/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_speciality">
+                          <SpecialityDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="departments/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_department">
+                          <DeparmentDetails />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="groups"
+                      element={
+                        <ProtectedRoute requiredPermission="view_groups">
+                          <Groups />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="corps"
+                      element={
+                        <ProtectedRoute requiredPermission="view_corps">
+                          <Corps />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="room-types"
+                      element={
+                        <ProtectedRoute requiredPermission="view_room_types">
+                          <RoomType />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="hours"
+                      element={
+                        <ProtectedRoute requiredPermission="view_hours">
+                          <Hours />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="lessons"
+                      element={
+                        <ProtectedRoute requiredPermission="view_disciplines">
+                          <Lessons />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="rooms"
+                      element={
+                        <ProtectedRoute requiredPermission="view_rooms">
+                          <Rooms />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="week-types"
+                      element={
+                        <ProtectedRoute requiredPermission="view_week_types">
+                          <WeekTypes />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="semesters"
+                      element={
+                        <ProtectedRoute requiredPermission="view_semesters">
+                          <Smestrs />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="schedule"
+                      element={
+                        <ProtectedRoute requiredPermission="view_schedules">
+                          <Schedule />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route
                       path="add-schedule-lesson"
-                      element={<AddScheduleLesson />}
+                      element={
+                        <ProtectedRoute requiredPermission="add_schedule">
+                          <AddScheduleLesson />
+                        </ProtectedRoute>
+                      }
                     />
                     <Route
                       path="schedule-lesson/:id"
-                      element={<EditLessonInShedule />}
+                      element={
+                        <ProtectedRoute requiredPermission="edit_schedule">
+                          <EditLessonInShedule />
+                        </ProtectedRoute>
+                      }
                     />
                   </Routes>
                 </DefaultLayout>

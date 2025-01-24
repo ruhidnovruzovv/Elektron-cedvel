@@ -16,8 +16,8 @@ const DeleteLessonModal: React.FC<DeleteLessonModalProps> = ({
   return (
     <div className="fixed inset-0  h-screen w-full bg-[#0000006c]  flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-        <h2 className="text-xl font-bold mb-4">Dərsi Sil</h2>
-        <p className="mb-4">Bu dərsi silmək istədiyinizə əminsinizmi?</p>
+        <h2 className="text-xl font-bold mb-4">Fənni Sil</h2>
+        <p className="mb-4">Bu fənni silmək istədiyinizə əminsinizmi?</p>
         <div className="flex justify-end">
           <button
             type="button"

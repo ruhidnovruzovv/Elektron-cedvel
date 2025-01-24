@@ -28,7 +28,7 @@ const Semestrs: React.FC = () => {
   const fetchSemestrs = async () => {
     try {
       setLoading(true);
-      const response = await get('/api/semestr');
+      const response = await get('/api/semesters');
       setSemestrs(response.data);
     } catch (error) {
       console.error('Error fetching semestrs:', error);
@@ -45,7 +45,7 @@ const Semestrs: React.FC = () => {
   const handleDelete = async () => {
     if (selectedSemestr) {
       try {
-        await del(`/api/semestr/${selectedSemestr.id}`);
+        await del(`/api/semesters/${selectedSemestr.id}`);
         setSemestrs(semestrs.filter((s) => s.id !== selectedSemestr.id));
         closeDeleteModal();
       } catch (error) {
@@ -82,14 +82,14 @@ const Semestrs: React.FC = () => {
   const handleSaveSemestr = async (year: string, semester_num: string) => {
     try {
       if (selectedSemestr) {
-        await put(`/api/semestr/${selectedSemestr.id}`, { year, semester_num });
+        await put(`/api/semesters/${selectedSemestr.id}`, { year, semester_num });
         setSemestrs(
           semestrs.map((s) =>
             s.id === selectedSemestr.id ? { ...s, year, semester_num } : s,
           ),
         );
       } else {
-        const response = await post('/api/semestr', { year, semester_num });
+        const response = await post('/api/semesters', { year, semester_num });
         setSemestrs([...semestrs, response.data]);
       }
       closeAddSemestrModal();
