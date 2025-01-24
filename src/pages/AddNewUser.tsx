@@ -127,6 +127,17 @@ const AddNewUser: React.FC = () => {
     setDepartmentIds(selectedOptions ? selectedOptions.map((option: any) => option.value) : []);
   };
 
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRoleId = Number(e.target.value);
+    setRoleId(newRoleId);
+
+    const selectedRole = allRoles.find(role => role.id === newRoleId);
+
+    if (selectedRole?.name === 'admin' || selectedRole?.name === 'SuperAdmin' || selectedRole?.name === 'FacultyAdmin') {
+      setDepartmentIds([]);
+    }
+  };
+
   const handleModalClose = () => {
     setIsErrorModalOpen(false);
     setError(null);
@@ -135,7 +146,7 @@ const AddNewUser: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Yeni İstifadəçi Əlavə Et</h2>
-     <Modal
+      <Modal
         isOpen={isErrorModalOpen}
         onRequestClose={handleModalClose}
         contentLabel="Error"
@@ -201,24 +212,22 @@ const AddNewUser: React.FC = () => {
           required
         />
       </div>
-      {(roleId !== 1 && roleId !== 3) && (
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Fakültə</label>
-          <select
-            className="w-full px-3 py-2 border rounded-lg"
-            value={facultyId || ''}
-            onChange={(e) => setFacultyId(Number(e.target.value))}
-            required
-          >
-            <option value="">Fakültə seçin</option>
-            {faculties.map((faculty) => (
-              <option key={faculty.id} value={faculty.id}>
-                {faculty.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Fakültə</label>
+        <select
+          className="w-full px-3 py-2 border rounded-lg"
+          value={facultyId || ''}
+          onChange={(e) => setFacultyId(Number(e.target.value))}
+          required
+        >
+          <option value="">Fakültə seçin</option>
+          {faculties.map((faculty) => (
+            <option key={faculty.id} value={faculty.id}>
+              {faculty.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="mb-4">
         <label className="block text-gray-700 mb-2">Kafedra</label>
         <MultiSelect
@@ -254,10 +263,7 @@ const AddNewUser: React.FC = () => {
         <select
           className="w-full px-3 py-2 border rounded-lg"
           value={roleId || ''}
-          onChange={(e) => {
-            setRoleId(Number(e.target.value));
-            setDepartmentIds([]); // Reset department selection on role change
-          }}
+          onChange={handleRoleChange}
           required
         >
           <option value="">Rol seçin</option>

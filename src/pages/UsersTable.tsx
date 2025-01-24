@@ -13,7 +13,9 @@ interface User {
   id: number;
   name: string;
   email: string;
-  roles: string[];
+  roles: { [key: string]: number };
+  faculty?: { id: number; name: string };
+  department_names?: { [key: string]: number };
 }
 
 interface Role {
@@ -71,7 +73,7 @@ const UserTable: React.FC = () => {
       (user) =>
         (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (selectedRole === '' || user.roles.includes(selectedRole)),
+        (selectedRole === '' || Object.keys(user.roles).includes(selectedRole)),
     );
     setFilteredUsers(results);
   }, [searchTerm, selectedRole, users]);
@@ -173,19 +175,17 @@ const UserTable: React.FC = () => {
               <td className="py-2 px-4 border-b text-center">{user.name}</td>
               <td className="py-2 px-4 border-b text-center">{user.email}</td>
               <td className="py-2 px-4 border-b text-center">
-                {user.roles.join(', ')}
+                {Object.keys(user.roles).join(', ')}
               </td>
               <td className="py-2 px-4 border-b flex justify-center">
-                {
-                  hasViewPermission && (
-                    <button
+                {hasViewPermission && (
+                  <button
                     className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
                     onClick={() => handleView(user.id)}
                   >
-                    <PiEyeLight className="w-3 md:w-5 h-3 md:h-5"/>
+                    <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
                   </button>
-                  )
-                }
+                )}
                 {hasEditPermission && (
                   <button
                     className="bg-blue-500 text-white p-2 rounded-lg mr-2"

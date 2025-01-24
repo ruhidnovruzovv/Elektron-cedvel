@@ -44,23 +44,23 @@ const AddScheduleLesson = () => {
   };
 
   useEffect(() => {
-    fetchData('/api/group', setGroups);
+    fetchData('/api/groups', setGroups);
     fetchData('/api/corps', setCorps);
-    fetchData('/api/room', setRooms);
-    fetchData('/api/lessontype', setLessonTypes);
-    fetchData('/api/hour', setHours);
-    fetchData('/api/semestr', setSemesters);
-    fetchData('/api/weektype', setWeekTypes);
-    fetchData('/api/day', setDays);
+    fetchData('/api/rooms', setRooms);
+    fetchData('/api/lesson_types', setLessonTypes);
+    fetchData('/api/hours', setHours);
+    fetchData('/api/semesters', setSemesters);
+    fetchData('/api/week_types', setWeekTypes);
+    fetchData('/api/days', setDays);
     fetchData('/api/users', setUsers);
-    fetchData('/api/faculty', setFaculties);
-    fetchData('/api/department', setDepartments);
-    fetchData('/api/lesson', setDisciplines);
+    fetchData('/api/faculties', setFaculties);
+    fetchData('/api/departments', setDepartments);
+    fetchData('/api/disciplines', setDisciplines);
   }, []);
 
   useEffect(() => {
     if (id) {
-      fetchData(`/api/schedule/${id}`, setFormData);
+      fetchData(`/api/schedules/${id}`, setFormData);
     }
   }, [id]);
 
@@ -94,9 +94,9 @@ const AddScheduleLesson = () => {
     e.preventDefault();
     try {
       if (id) {
-        await put(`/api/schedule/${id}`, formData);
+        await put(`/api/schedules/${id}`, formData);
       } else {
-        await post('/api/schedule', formData);
+        await post('/api/schedules', formData);
       }
       navigate('/schedule');
     } catch (error) {

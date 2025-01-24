@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { get, put } from '../api/service';
 import usePermissions from '../hooks/usePermissions';
 import Modal from 'react-modal';
+import { MultiSelect } from 'react-multi-select-component';
 import '../css/Modal.css';
 
 interface Faculty {
   id: number;
   name: string;
+  departments: Department[];
 }
 
 interface Department {
@@ -29,9 +31,9 @@ const EditUser: React.FC = () => {
   const [duty, setDuty] = useState('');
   const [employeeType, setEmployeeType] = useState('');
   const [facultyId, setFacultyId] = useState<number | null>(null);
-  const [departmentId, setDepartmentId] = useState<number | null>(null);
+  const [departmentIds, setDepartmentIds] = useState<number[]>([]);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [roleId, setRoleId] = useState<number | null>(null);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [allRoles, setAllRoles] = useState<Role[]>([]);
@@ -43,18 +45,16 @@ const EditUser: React.FC = () => {
     const fetchUser = async () => {
       try {
         const response = await get(`/api/users/${id}`);
-        const userData = response.data.userData; 
+        const userData = response.data;
         setName(userData.name || '');
         setSurname(userData.surname || '');
         setPatronymic(userData.patronymic || '');
         setDuty(userData.duty || '');
         setEmployeeType(userData.employee_type || '');
-        setFacultyId(userData.faculty_id || null);
-        setDepartmentId(userData.department_id || null);
+        setFacultyId(userData.faculty?.id || null);
+        setDepartmentIds(Object.values(userData.department_names || {}));
         setEmail(userData.email || '');
-        setRole(
-          userData.roles && userData.roles.length > 0 ? userData.roles[0] : '',
-        ); // İlk rolü al
+        setRoleId(Object.values(userData.roles)[0] || null);
       } catch (err: any) {
         console.error('Error fetching user:', err);
         setError(err.message || 'An error occurred');
@@ -97,9 +97,46 @@ const EditUser: React.FC = () => {
     fetchRoles();
   }, [id]);
 
+  useEffect(() => {
+    if (facultyId) {
+      const selectedFaculty = faculties.find(faculty => faculty.id === facultyId);
+      if (selectedFaculty) {
+        setDepartments(selectedFaculty.departments);
+      }
+    } else {
+      setDepartments([]);
+    }
+  }, [facultyId, faculties]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const selectedRole = allRoles.find(role => role.id === roleId);
+
+    if ((selectedRole?.name === 'admin' || selectedRole?.name === 'SuperAdmin') && (facultyId || departmentIds.length > 0)) {
+      setError('Admin və ya SuperAdmin heçbir fakültə və kafedraya əlavə oluna bilməz.');
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    if (selectedRole?.name === 'FacultyAdmin' && (!facultyId || departmentIds.length > 0)) {
+      setError('FacultyAdmin yalnız bir fakültəyə əlavə olunmalıdır və kafedra seçilməməlidir.');
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    if (selectedRole?.name === 'DepartmentAdmin' && (!facultyId || departmentIds.length !== 1)) {
+      setError('DepartmentAdmin yalnız bir kafedraya əlavə olunmalıdır və fakültə seçilməlidir.');
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    if (selectedRole?.name === 'teacher' && (!facultyId || departmentIds.length === 0)) {
+      setError('Teacher bir fakültəyə və bir neçə kafedraya əlavə olunmalıdır.');
+      setIsErrorModalOpen(true);
+      return;
+    }
 
     try {
       await put(`/api/users/${id}`, {
@@ -109,9 +146,9 @@ const EditUser: React.FC = () => {
         duty,
         employee_type: employeeType,
         faculty_id: facultyId,
-        department_id: departmentId,
+        department_ids: departmentIds,
         email,
-        roles: [role],
+        role_id: roleId,
       });
       navigate('/users');
     } catch (err: any) {
@@ -119,6 +156,10 @@ const EditUser: React.FC = () => {
       setError(err.message || 'An error occurred');
       setIsErrorModalOpen(true);
     }
+  };
+
+  const handleDepartmentChange = (selectedOptions: any) => {
+    setDepartmentIds(selectedOptions ? selectedOptions.map((option: any) => option.value) : []);
   };
 
   const handleModalClose = () => {
@@ -261,26 +302,18 @@ const EditUser: React.FC = () => {
         </div>
         <div>
           <label
-            htmlFor="departmentId"
+            htmlFor="departmentIds"
             className="block text-sm font-medium text-gray-700"
           >
             Kafedra
           </label>
-          <select
-            id="departmentId"
-            name="departmentId"
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={departmentId || ''}
-            onChange={(e) => setDepartmentId(Number(e.target.value))}
-          >
-            <option value="">Kafedra seçin</option>
-            {departments.map((department) => (
-              <option key={department.id} value={department.id}>
-                {department.name}
-              </option>
-            ))}
-          </select>
+          <MultiSelect
+            options={departments.map(department => ({ label: department.name, value: department.id }))}
+            value={departments.filter(department => departmentIds.includes(department.id)).map(department => ({ label: department.name, value: department.id }))}
+            onChange={handleDepartmentChange}
+            labelledBy="Kafedra seçin"
+            hasSelectAll={roleId !== 11}
+          />
         </div>
         <div>
           <label
@@ -301,22 +334,25 @@ const EditUser: React.FC = () => {
         </div>
         <div className="mb-4">
           <label
-            htmlFor="role"
+            htmlFor="roleId"
             className="block text-sm font-medium text-gray-700"
           >
             Rol
           </label>
           <select
-            id="role"
-            name="role"
+            id="roleId"
+            name="roleId"
             required
             className="w-full px-3 py-2 border rounded-lg"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            value={roleId || ''}
+            onChange={(e) => {
+              setRoleId(Number(e.target.value));
+              setDepartmentIds([]); // Reset department selection on role change
+            }}
           >
             <option value="">Rol seçin</option>
             {allRoles.map((role) => (
-              <option key={role.id} value={role.name}>
+              <option key={role.id} value={role.id}>
                 {role.name}
               </option>
             ))}

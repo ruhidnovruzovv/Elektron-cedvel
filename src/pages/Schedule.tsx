@@ -99,7 +99,7 @@ const Schedule: React.FC = () => {
   const fetchSchedules = async (filterParams: string = '') => {
     try {
       setLoading(true);
-      const response = await get(`/api/schedule${filterParams}`);
+      const response = await get(`/api/schedules${filterParams}`);
       const scheduleData = Object.values(response.data.schedules);
       setSchedules(scheduleData);
     } catch (error) {
@@ -111,7 +111,7 @@ const Schedule: React.FC = () => {
 
   const fetchDays = async () => {
     try {
-      const response = await get('/api/day');
+      const response = await get('/api/days');
       setDays(response.data);
     } catch (error) {
       console.error('Error fetching days:', error);
@@ -120,7 +120,7 @@ const Schedule: React.FC = () => {
 
   const fetchHours = async () => {
     try {
-      const response = await get('/api/hour');
+      const response = await get('/api/hours');
       setHours(response.data);
     } catch (error) {
       console.error('Error fetching hours:', error);
@@ -129,7 +129,7 @@ const Schedule: React.FC = () => {
 
   const fetchFaculties = async () => {
     try {
-      const response = await get('/api/faculty');
+      const response = await get('/api/faculties');
       setFaculties(response.data);
     } catch (error) {
       console.error('Error fetching faculties:', error);
@@ -138,7 +138,7 @@ const Schedule: React.FC = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await get('/api/department');
+      const response = await get('/api/departments');
       setDepartments(response.data);
     } catch (error) {
       console.error('Error fetching departments:', error);
@@ -147,7 +147,7 @@ const Schedule: React.FC = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await get('/api/group');
+      const response = await get('/api/groups');
       setGroups(response.data);
     } catch (error) {
       console.error('Error fetching groups:', error);
@@ -165,7 +165,7 @@ const Schedule: React.FC = () => {
 
   const fetchRooms = async () => {
     try {
-      const response = await get('/api/room');
+      const response = await get('/api/rooms');
       setRooms(response.data);
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -174,7 +174,7 @@ const Schedule: React.FC = () => {
 
   const fetchLessonTypes = async () => {
     try {
-      const response = await get('/api/lessontype');
+      const response = await get('/api/lesson_types');
       setLessonTypes(response.data);
     } catch (error) {
       console.error('Error fetching lesson types:', error);
@@ -183,7 +183,7 @@ const Schedule: React.FC = () => {
 
   const fetchSemesters = async () => {
     try {
-      const response = await get('/api/semestr');
+      const response = await get('/api/semesters');
       setSemesters(response.data);
     } catch (error) {
       console.error('Error fetching semesters:', error);
@@ -192,7 +192,7 @@ const Schedule: React.FC = () => {
 
   const fetchWeekTypes = async () => {
     try {
-      const response = await get('/api/weektype');
+      const response = await get('/api/week_types');
       setWeekTypes(response.data);
     } catch (error) {
       console.error('Error fetching week types:', error);
@@ -210,7 +210,7 @@ const Schedule: React.FC = () => {
 
   const fetchDisciplines = async () => {
     try {
-      const response = await get('/api/lesson');
+      const response = await get('/api/disciplines');
       setDisciplines(response.data);
     } catch (error) {
       console.error('Error fetching disciplines:', error);
