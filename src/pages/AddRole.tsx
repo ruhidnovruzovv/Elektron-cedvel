@@ -32,7 +32,7 @@ const AddRole: React.FC = () => {
     try {
       await post('/api/roles', {
         name: name,
-        permissions: selectedPermissions, // Permissions as IDs
+        permissions: selectedPermissions,
       });
       navigate('/role');
     } catch (err: any) {
@@ -59,7 +59,7 @@ const AddRole: React.FC = () => {
   }, {});
 
   return (
-    <div className="">
+    <div className="container mx-auto">
       <h2 className="text-2xl font-bold mb-6">Yeni Rol Əlavə Et</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="mb-4 flex items-end">
@@ -93,7 +93,7 @@ const AddRole: React.FC = () => {
         {Object.keys(groupedPermissions).map((group) => (
           <div key={group} className="mb-4">
             <h4 className="text-lg font-semibold mb-2 capitalize">{group}</h4>
-            <div className="flex gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {groupedPermissions[group].map((permission) => (
                 <label key={permission.id} className="flex items-center">
                   <input

@@ -7,14 +7,17 @@ const EditLessonInShedule = () => {
   const [departments, setDepartments] = useState([]);
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [filteredGroups, setFilteredGroups] = useState([]);
   const [corps, setCorps] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]);
   const [lessonTypes, setLessonTypes] = useState([]);
   const [hours, setHours] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [weekTypes, setWeekTypes] = useState([]);
   const [days, setDays] = useState([]);
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]); // Add this line
   const [disciplines, setDisciplines] = useState([]);
   const [filteredDisciplines, setFilteredDisciplines] = useState([]);
   const navigate = useNavigate();
@@ -51,19 +54,19 @@ const EditLessonInShedule = () => {
         disciplinesResponse,
         scheduleResponse,
       ] = await Promise.all([
-        get('/api/group'),
+        get('/api/groups'),
         get('/api/corps'),
-        get('/api/room'),
-        get('/api/lessontype'),
-        get('/api/hour'),
-        get('/api/semestr'),
-        get('/api/weektype'),
-        get('/api/day'),
+        get('/api/rooms'),
+        get('/api/lesson_types'),
+        get('/api/hours'),
+        get('/api/semesters'),
+        get('/api/week_types'),
+        get('/api/days'),
         get('/api/users'),
-        get('/api/faculty'),
-        get('/api/department'),
-        get('/api/lesson'),
-        get(`/api/schedule/${id}`),
+        get('/api/faculties'),
+        get('/api/departments'),
+        get('/api/disciplines'),
+        get(`/api/schedules/${id}`),
       ]);
 
       setGroups(groupsResponse.data);
@@ -140,18 +143,45 @@ const EditLessonInShedule = () => {
         (department) => department.faculty_id === parseInt(formData.faculty_id),
       );
       setFilteredDepartments(filtered);
+
+      const filteredGroups = groups.filter(
+        (group) => group.faculty_id === parseInt(formData.faculty_id),
+      );
+      setFilteredGroups(filteredGroups);
+    } else {
+      setFilteredDepartments([]);
+      setFilteredGroups([]);
     }
-  }, [formData.faculty_id, departments]);
+  }, [formData.faculty_id, departments, groups]);
 
   useEffect(() => {
     if (formData.department_id) {
-      const filtered = disciplines.filter(
+      const filteredDisciplines = disciplines.filter(
         (discipline) =>
           discipline.department_id === parseInt(formData.department_id),
       );
-      setFilteredDisciplines(filtered);
+      setFilteredDisciplines(filteredDisciplines);
+
+      const filteredUsers = users.filter((user) =>
+        user.department_names && Object.values(user.department_names).includes(parseInt(formData.department_id)),
+      );
+      setFilteredUsers(filteredUsers);
+    } else {
+      setFilteredDisciplines([]);
+      setFilteredUsers([]);
     }
-  }, [formData.department_id, disciplines]);
+  }, [formData.department_id, disciplines, users]);
+
+  useEffect(() => {
+    if (formData.corp_id) {
+      const filteredRooms = rooms.filter(
+        (room) => room.corp_id === parseInt(formData.corp_id),
+      );
+      setFilteredRooms(filteredRooms);
+    } else {
+      setFilteredRooms([]);
+    }
+  }, [formData.corp_id, rooms]);
 
   const handleChange = (e) => {
     setFormData({
@@ -163,13 +193,38 @@ const EditLessonInShedule = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await put(`/api/schedule/${id}`, formData);
+      await put(`/api/schedules/${id}`, formData);
       navigate('/schedule');
     } catch (error) {
-      console.error('Error updating schedule lesson:', error);
-      alert('Dərs cədvələ yenilənərkən xəta baş verdi');
+      console.error('Error adding/updating schedule lesson:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: error.response.data.message,
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Xəta',
+          text: 'Dərs cədvələ əlavə olunarkən xəta baş verdi',
+        });
+      }
     }
   };
+
+
+  const getDayName = (dayNumber) => {
+    const dayNames = {
+      '1': 'Bazar ertəsi',
+      '2': 'Çərşənbə axşamı',
+      '3': 'Çərşənbə',
+      '4': 'Cümə axşamı',
+      '5': 'Cümə',
+    };
+    return dayNames[dayNumber] || dayNumber;
+  };
+
 
   return (
     <div className="grid md:grid-cols-2 m-5 md:m-10 gap-4">
@@ -221,7 +276,7 @@ const EditLessonInShedule = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Seçin</option>
-            {groups.map((group) => (
+            {filteredGroups.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}
               </option>
@@ -253,7 +308,7 @@ const EditLessonInShedule = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Seçin</option>
-            {rooms.map((room) => (
+            {filteredRooms.map((room) => (
               <option key={room.id} value={room.id}>
                 {room.name}
               </option>
@@ -335,8 +390,7 @@ const EditLessonInShedule = () => {
             <option value="">Seçin</option>
             {days.map((day) => (
               <option key={day.id} value={day.id}>
-                {day.name}
-              </option>
+{getDayName(day.name)}              </option>
             ))}
           </select>
         </div>
@@ -349,7 +403,7 @@ const EditLessonInShedule = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Seçin</option>
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.name}
               </option>

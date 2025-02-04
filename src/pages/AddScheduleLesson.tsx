@@ -1,20 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { get, post, put } from '../api/service';
 import { useNavigate, useParams } from 'react-router-dom';
+import Select from 'react-select';
+import Swal from 'sweetalert2';
 
 const AddScheduleLesson = () => {
   const [faculties, setFaculties] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [filteredDepartments, setFilteredDepartments] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [filteredGroups, setFilteredGroups] = useState([]);
   const [corps, setCorps] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]);
   const [lessonTypes, setLessonTypes] = useState([]);
   const [hours, setHours] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [weekTypes, setWeekTypes] = useState([]);
   const [days, setDays] = useState([]);
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [filteredDisciplines, setFilteredDisciplines] = useState([]);
   const navigate = useNavigate();
@@ -22,7 +27,7 @@ const AddScheduleLesson = () => {
   const [formData, setFormData] = useState({
     faculty_id: '',
     department_id: '',
-    group_id: '',
+    group_id: [],
     corp_id: '',
     room_id: '',
     lesson_type_id: '',
@@ -70,23 +75,59 @@ const AddScheduleLesson = () => {
         (department) => department.faculty_id === parseInt(formData.faculty_id),
       );
       setFilteredDepartments(filtered);
+
+      const filteredGroups = groups.filter(
+        (group) => group.faculty_id === parseInt(formData.faculty_id),
+      );
+      setFilteredGroups(filteredGroups);
+    } else {
+      setFilteredDepartments([]);
+      setFilteredGroups([]);
     }
-  }, [formData.faculty_id, departments]);
+  }, [formData.faculty_id, departments, groups]);
 
   useEffect(() => {
     if (formData.department_id) {
-      const filtered = disciplines.filter(
+      const filteredDisciplines = disciplines.filter(
         (discipline) =>
           discipline.department_id === parseInt(formData.department_id),
       );
-      setFilteredDisciplines(filtered);
+      setFilteredDisciplines(filteredDisciplines);
+  
+      const filteredUsers = users.filter((user) =>
+        user.department_names && Object.values(user.department_names).includes(parseInt(formData.department_id)),
+      );
+      setFilteredUsers(filteredUsers);
+    } else {
+      setFilteredDisciplines([]);
+      setFilteredUsers([]);
     }
-  }, [formData.department_id, disciplines]);
+  }, [formData.department_id, disciplines, users]);
 
+  useEffect(() => {
+    if (formData.corp_id) {
+      const filteredRooms = rooms.filter(
+        (room) => room.corp_id === parseInt(formData.corp_id),
+      );
+      setFilteredRooms(filteredRooms);
+    } else {
+      setFilteredRooms([]);
+    }
+  }, [formData.corp_id, rooms]);
+  
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    });
+  };
+
+  const handleGroupChange = (selectedOptions) => {
+    const groupIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
+    setFormData({
+      ...formData,
+      group_id: groupIds,
     });
   };
 
@@ -101,8 +142,36 @@ const AddScheduleLesson = () => {
       navigate('/schedule');
     } catch (error) {
       console.error('Error adding/updating schedule lesson:', error);
-      alert('Dərs cədvələ əlavə olunarkən xəta baş verdi');
+      if (error.response && error.response.data && error.response.data.message) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: error.response.data.message,
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Xəta',
+          text: 'Dərs cədvələ əlavə olunarkən xəta baş verdi',
+        });
+      }
     }
+  };
+
+  const groupOptions = filteredGroups.map(group => ({
+    value: group.id,
+    label: group.name,
+  }));
+
+  const getDayName = (dayNumber) => {
+    const dayNames = {
+      '1': 'Bazar ertəsi',
+      '2': 'Çərşənbə axşamı',
+      '3': 'Çərşənbə',
+      '4': 'Cümə axşamı',
+      '5': 'Cümə',
+    };
+    return dayNames[dayNumber] || dayNumber;
   };
 
   return (
@@ -148,19 +217,15 @@ const AddScheduleLesson = () => {
         </div>
         <div>
           <label className="block font-medium">Qrup:</label>
-          <select
+          <Select
+            isMulti
             name="group_id"
-            value={formData.group_id}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
-          >
-            <option value="">Seçin</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+            value={groupOptions.filter(option => formData.group_id.includes(option.value))}
+            onChange={handleGroupChange}
+            options={groupOptions}
+            className="basic-multi-select"
+            classNamePrefix="select"
+          />
         </div>
         <div>
           <label className="block font-medium">Korpus:</label>
@@ -187,9 +252,9 @@ const AddScheduleLesson = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Seçin</option>
-            {rooms.map((room) => (
+            {filteredRooms.map((room) => (
               <option key={room.id} value={room.id}>
-                {room.name}
+                {room.name} - {room.room_type.name}
               </option>
             ))}
           </select>
@@ -237,7 +302,7 @@ const AddScheduleLesson = () => {
             <option value="">Seçin</option>
             {semesters.map((semester) => (
               <option key={semester.id} value={semester.id}>
-                {semester.semester_num}
+              {semester.year}  - {semester.semester_num} 
               </option>
             ))}
           </select>
@@ -269,7 +334,7 @@ const AddScheduleLesson = () => {
             <option value="">Seçin</option>
             {days.map((day) => (
               <option key={day.id} value={day.id}>
-                {day.name}
+                {getDayName(day.name)}
               </option>
             ))}
           </select>
@@ -280,11 +345,10 @@ const AddScheduleLesson = () => {
             name="user_id"
             value={formData.user_id}
             onChange={handleChange}
-            onFocus={() => fetchData('/api/users', setUsers)}
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Seçin</option>
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.name}
               </option>
