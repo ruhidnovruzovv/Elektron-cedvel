@@ -6,6 +6,8 @@ import DeleteCorpsModal from '../components/Modals/Corps/DeleteCorps';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { FaRegEdit } from 'react-icons/fa';
 import { AiOutlineDelete } from 'react-icons/ai';
+import usePermissions from '../hooks/usePermissions';
+import Swal from 'sweetalert2';
 
 interface Corps {
   id: number;
@@ -19,6 +21,11 @@ const Corps: React.FC = () => {
   const [isAddCorpsModalOpen, setIsAddCorpsModalOpen] = useState(false);
   const [isEditCorpsModalOpen, setIsEditCorpsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const hasAddPermission = usePermissions('add_corp');
+  const hasEditPermission = usePermissions('edit_corp');
+  const hasDeletePermission = usePermissions('delete_corp');
+  const hasViewPermission = usePermissions('view_corp');
 
   useEffect(() => {
     fetchCorps();
@@ -47,8 +54,22 @@ const Corps: React.FC = () => {
         await del(`/api/corps/${selectedCorps.id}`);
         setCorps(corps.filter((c) => c.id !== selectedCorps.id));
         closeDeleteModal();
+        Swal.fire({
+          title: 'Silindi!',
+          text: 'Korpus uğurla silindi.',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
       } catch (error) {
         console.error('Error deleting corps:', error);
+        Swal.fire({
+          title: 'Xəta!',
+          text:
+            error.response?.data?.message ||
+            'Fakültəni silərkən xəta baş verdi.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     }
   };
@@ -100,12 +121,14 @@ const Corps: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Korpuslar</h2>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={openAddCorpsModal}
-      >
-        Yeni Korpus Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={openAddCorpsModal}
+        >
+          Yeni Korpus Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -129,18 +152,22 @@ const Corps: React.FC = () => {
                     {corps.name}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    <button
-                      className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                      onClick={() => handleEdit(corps)}
-                    >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
-                    <button
-                      className="bg-red-500 text-white p-2 rounded-lg"
-                      onClick={() => openDeleteModal(corps)}
-                    >
-                      <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
+                    {hasEditPermission && (
+                      <button
+                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => handleEdit(corps)}
+                      >
+                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-lg"
+                        onClick={() => openDeleteModal(corps)}
+                      >
+                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

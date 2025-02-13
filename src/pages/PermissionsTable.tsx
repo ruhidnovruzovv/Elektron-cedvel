@@ -5,7 +5,6 @@ import EditPermissionModal from '../components/Modals/Permissions/EditPermission
 import DeleteModal from '../components/Modals/Permissions/DeletePermissions';
 import usePermissions from '../hooks/usePermissions';
 import { AiOutlineDelete } from 'react-icons/ai';
-import { PiEyeLight } from 'react-icons/pi';
 import { FaRegEdit } from 'react-icons/fa';
 
 interface Permission {

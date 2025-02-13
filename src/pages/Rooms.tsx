@@ -8,6 +8,7 @@ import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
 import { PiEyeLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
+import usePermissions from '../hooks/usePermissions';
 
 interface Room {
   id: number;
@@ -34,7 +35,12 @@ const Rooms: React.FC = () => {
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
   const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const hasAddPermission = usePermissions('add_room');
+  const hasEditPermission = usePermissions('edit_room');
+  const hasDeletePermission = usePermissions('delete_room');
+  const hasViewPermission = usePermissions('view_room');
 
   useEffect(() => {
     fetchRooms();
@@ -146,12 +152,14 @@ const Rooms: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Otaqlar</h2>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={openAddRoomModal}
-      >
-        Yeni Otaq Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={openAddRoomModal}
+        >
+          Yeni Otaq Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -191,24 +199,30 @@ const Rooms: React.FC = () => {
                     {room.corp ? room.corp.name : 'N/A'}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    <button
-                      className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
-                      onClick={()=>navigate(`/rooms/${room.id}`)}
-                    >
-                      <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
-                    <button
-                      className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                      onClick={() => handleEdit(room)}
-                    >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
-                    <button
-                      className="bg-red-500 text-white p-2 rounded-lg"
-                      onClick={() => openDeleteModal(room)}
-                    >
-                      <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
+                    {hasViewPermission && (
+                      <button
+                        className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                        onClick={() => navigate(`/rooms/${room.id}`)}
+                      >
+                        <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasEditPermission && (
+                      <button
+                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => handleEdit(room)}
+                      >
+                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-lg"
+                        onClick={() => openDeleteModal(room)}
+                      >
+                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

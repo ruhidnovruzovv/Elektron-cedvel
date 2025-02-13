@@ -18,6 +18,8 @@ import {
 import { FaDropbox } from 'react-icons/fa';
 import { MdRoomPreferences } from 'react-icons/md';
 import { MdOutlineWatchLater } from 'react-icons/md';
+import { useAuth } from '../../Context/AuthContext';
+
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -27,7 +29,6 @@ interface SidebarProps {
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const location = useLocation();
   const { pathname } = location;
-
   const hasShowUsers = usePermissions('view_users');
   const hasShowRoles = usePermissions('view_roles');
   const hasShowPermissions = usePermissions('view_permissions');
@@ -45,6 +46,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const hasShowWeekTypes = usePermissions('view_week_types');
   const hasShowHours = usePermissions('view_hours');
   const hasShowSchedules = usePermissions('view_schedules');
+  const hasRoomPermissions = usePermissions('view_room_permissions');
+
+  const {user} = useAuth()
+
+  const isTeacher = user?.roles.includes("teacher")
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
@@ -322,6 +328,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   </NavLink>
                 </li>
               )}
+              {
+                hasRoomPermissions && (
+                  <li>
+                  <NavLink
+                    to="/room-permissions"
+                    className={`group relative flex items-center gap-2.5 rounded-lg py-2 px-4 font-medium duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      pathname === '/room-permissions' && 'bg-graydark dark:bg-meta-4'
+                    }`}
+                  >
+                    <MdOutlineMeetingRoom size={25} />
+                    Otaq İcazəsi
+                  </NavLink>
+                </li>
+                )
+              }
               {hasShowSemesters && (
                 <li>
                   <NavLink
@@ -348,7 +369,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   </NavLink>
                 </li>
               )}
-              {hasShowHours && (
+              {hasShowHours  && !isTeacher ? (
                 <li>
                   <NavLink
                     to="/hours"
@@ -360,7 +381,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     Saatlar
                   </NavLink>
                 </li>
-              )}
+              ) : null}
                {hasShowUsers && (
                 <li>
                   <NavLink

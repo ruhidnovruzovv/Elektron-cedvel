@@ -7,6 +7,8 @@ import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
 import { PiEyeLight } from 'react-icons/pi';
 import Breadcrumb from './../components/Breadcrumbs/Breadcrumb';
+import usePermissions from '../hooks/usePermissions';
+import Swal from 'sweetalert2';
 
 interface Faculty {
   id: number;
@@ -29,6 +31,11 @@ const FacultyPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const hasAddPermission = usePermissions('add_faculty');
+  const hasEditPermission = usePermissions('edit_faculty');
+  const hasDeletePermission = usePermissions('delete_faculty');
+  const hasViewPermission = usePermissions('view_faculty');
 
   useEffect(() => {
     fetchFaculties();
@@ -72,13 +79,25 @@ const FacultyPage: React.FC = () => {
   const handleDeleteFaculty = async () => {
     if (facultyToDelete !== null) {
       try {
-        await del(`/api/faculties/${facultyToDelete}`);
+        const response = await del(`/api/faculties/${facultyToDelete}`);
         setFacultyToDelete(null);
         setIsDeleteModalOpen(false);
         fetchFaculties();
+        Swal.fire({
+          title: 'Silindi!',
+          text: 'Fakültə uğurla silindi.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
       } catch (err: any) {
         console.error('Error deleting faculty:', err);
         setError(err.message || 'An error occurred');
+        Swal.fire({
+          title: 'Xəta!',
+          text: err.response?.data?.message || 'Fakültəni silərkən xəta baş verdi.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     }
   };
@@ -86,13 +105,14 @@ const FacultyPage: React.FC = () => {
   return (
     <div className="">
       <Breadcrumb pageName="Fakültələr" />
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={() => setIsAddModalOpen(true)}
-      >
-        Yeni Fakültə Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={() => setIsAddModalOpen(true)}
+        >
+          Yeni Fakültə Əlavə Et
+        </button>
+      )}
       <table className="min-w-full bg-white">
         <thead>
           <tr className="bg-[#e3e3e3] dark:bg-gray-800">
@@ -137,34 +157,39 @@ const FacultyPage: React.FC = () => {
                     Yenilə
                   </button>
                 ) : (
-                  
-                  <button
-                    className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                    onClick={() => {
-                      setEditFacultyId(faculty.id);
-                      setEditFacultyName(faculty.name);
-                    }}
-                  >
-                    <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                  </button>
+                  <>
+                    {hasEditPermission && (
+                      <button
+                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => {
+                          setEditFacultyId(faculty.id);
+                          setEditFacultyName(faculty.name);
+                        }}
+                      >
+                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => {
+                          setFacultyToDelete(faculty.id);
+                          setIsDeleteModalOpen(true);
+                        }}
+                      >
+                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasViewPermission && (
+                      <button
+                        className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                        onClick={() => navigate(`/faculty/${faculty.id}`)}
+                      >
+                        <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                  </>
                 )}
-                <button
-                  className="bg-red-500 text-white p-2 rounded-lg mr-2"
-                  onClick={() => {
-                    setFacultyToDelete(faculty.id);
-                    setIsDeleteModalOpen(true);
-                  }}
-                >
-                  <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                </button>
-                <button
-                  className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
-                  onClick={() =>
-                    navigate(`/faculty/${faculty.id}`)
-                  }
-                >
-                  <PiEyeLight className="w-3 md:w-5 h-3 md:h-5"/>
-                  </button>
               </td>
             </tr>
           ))}

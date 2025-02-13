@@ -6,6 +6,7 @@ import { FaRegEdit } from 'react-icons/fa';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';
 import { PiEyeLight } from 'react-icons/pi';
+import usePermissions from '../hooks/usePermissions';
 
 interface Speciality {
   id: number;
@@ -23,20 +24,19 @@ const Specialities: React.FC = () => {
   const [specialities, setSpecialities] = useState<Speciality[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [newSpecialityName, setNewSpecialityName] = useState<string>('');
-  const [newSpecialityFacultyId, setNewSpecialityFacultyId] = useState<
-    number | null
-  >(null);
+  const [newSpecialityFacultyId, setNewSpecialityFacultyId] = useState<number | null>(null);
   const [editSpecialityId, setEditSpecialityId] = useState<number | null>(null);
   const [editSpecialityName, setEditSpecialityName] = useState<string>('');
-  const [editSpecialityFacultyId, setEditSpecialityFacultyId] = useState<
-    number | null
-  >(null);
+  const [editSpecialityFacultyId, setEditSpecialityFacultyId] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-  const [specialityToDelete, setSpecialityToDelete] = useState<number | null>(
-    null,
-  );
+  const [specialityToDelete, setSpecialityToDelete] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const hasAddPermission = usePermissions('add_speciality');
+  const hasEditPermission = usePermissions('edit_speciality');
+  const hasDeletePermission = usePermissions('delete_speciality');
+  const hasViewPermission = usePermissions('view_speciality');
 
   const fetchSpecialities = async () => {
     try {
@@ -114,12 +114,14 @@ const Specialities: React.FC = () => {
     <div className="">
       <h2 className="text-2xl font-bold mb-6">İxtisas</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={() => setIsAddModalOpen(true)}
-      >
-        Yeni İxtisas Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={() => setIsAddModalOpen(true)}
+        >
+          Yeni İxtisas Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm bg-white">
           <thead>
@@ -172,41 +174,46 @@ const Specialities: React.FC = () => {
                 <td className="py-2 px-4 border-b text-center">
                   {editSpecialityId === speciality.id ? (
                     <button
-                    className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                      className="bg-blue-500 text-white p-2 rounded-lg mr-2"
                       onClick={handleEditSpeciality}
                     >
                       Yenilə
                     </button>
                   ) : (
-                    <div >
-                      <button
-                    className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                    onClick={() => {
-                          setEditSpecialityId(speciality.id);
-                          setEditSpecialityName(speciality.name);
-                          setEditSpecialityFacultyId(speciality.faculty_id);
-                        }}
-                      >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
-
-                      <button
-                  className="bg-red-500 text-white p-2 w-fit mr-2 rounded-lg"
-                  onClick={() => {
-                          setSpecialityToDelete(speciality.id);
-                          setIsDeleteModalOpen(true);
-                        }}
-                      >
-                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
-                      <button
-                        className="bg-[#d29a00] text-white p-2 rounded-lg"
-                        onClick={() => navigate(`/specialities/${speciality.id}`)}
-                      >
-                        <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
+                    <div>
+                      {hasEditPermission && (
+                        <button
+                          className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                          onClick={() => {
+                            setEditSpecialityId(speciality.id);
+                            setEditSpecialityName(speciality.name);
+                            setEditSpecialityFacultyId(speciality.faculty_id);
+                          }}
+                        >
+                          <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
+                      {hasDeletePermission && (
+                        <button
+                          className="bg-red-500 text-white p-2 w-fit mr-2 rounded-lg"
+                          onClick={() => {
+                            setSpecialityToDelete(speciality.id);
+                            setIsDeleteModalOpen(true);
+                          }}
+                        >
+                          <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
+                      {hasViewPermission && (
+                        <button
+                          className="bg-[#d29a00] text-white p-2 rounded-lg"
+                          onClick={() => navigate(`/specialities/${speciality.id}`)}
+                        >
+                          <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
                     </div>
-                  )}{' '}
+                  )}
                 </td>
               </tr>
             ))}

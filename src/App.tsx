@@ -43,6 +43,8 @@ import SpecialityDetails from './pages/SpecialityDetails';
 import GroupDetails from './pages/GroupDetails';
 import RoomDetails from './pages/RoomDetails';
 import Forbidden from './pages/Common/Forbidden';
+import RoomPermissions from './pages/RoomPermissions';
+import DetailsRoomPermission from './pages/DetailsRoomPermission';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,7 +74,7 @@ function App() {
               <ProtectedRoute>
                 <DefaultLayout>
                   <Routes>
-                    <Route path='/403' element={<Forbidden />} />
+                    <Route path="/403" element={<Forbidden />} />
                     <Route index element={<ECommerce />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="forms/form-elements" />
@@ -267,6 +269,22 @@ function App() {
                       element={
                         <ProtectedRoute requiredPermission="view_rooms">
                           <Rooms />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/room-permissions"
+                      element={
+                        <ProtectedRoute requiredPermission="view_room_permissions">
+                          <RoomPermissions />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/room-permissions/:id"
+                      element={
+                        <ProtectedRoute requiredPermission="view_room_permission">
+                          <DetailsRoomPermission />
                         </ProtectedRoute>
                       }
                     />

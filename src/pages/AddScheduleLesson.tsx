@@ -14,6 +14,7 @@ const AddScheduleLesson = () => {
   const [rooms, setRooms] = useState([]);
   const [filteredRooms, setFilteredRooms] = useState([]);
   const [lessonTypes, setLessonTypes] = useState([]);
+  const [lessonHours, setLessonHours] = useState([]);
   const [hours, setHours] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [weekTypes, setWeekTypes] = useState([]);
@@ -31,6 +32,7 @@ const AddScheduleLesson = () => {
     corp_id: '',
     room_id: '',
     lesson_type_id: '',
+    lesson_type_hour_id: '',
     hour_id: '',
     semester_id: '',
     week_type_id: '',
@@ -53,6 +55,7 @@ const AddScheduleLesson = () => {
     fetchData('/api/corps', setCorps);
     fetchData('/api/rooms', setRooms);
     fetchData('/api/lesson_types', setLessonTypes);
+    fetchData('/api/lesson-hours', setLessonHours);
     fetchData('/api/hours', setHours);
     fetchData('/api/semesters', setSemesters);
     fetchData('/api/week_types', setWeekTypes);
@@ -147,6 +150,13 @@ const AddScheduleLesson = () => {
           icon: "error",
           title: "Oops...",
           text: error.response.data.message,
+        });
+      } else if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = Object.values(error.response.data.errors).flat().join(', ');
+        Swal.fire({
+          icon: 'error',
+          title: 'Xəta',
+          text: errorMessages,
         });
       } else {
         Swal.fire({
@@ -271,6 +281,22 @@ const AddScheduleLesson = () => {
             {lessonTypes.map((lessonType) => (
               <option key={lessonType.id} value={lessonType.id}>
                 {lessonType.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block font-medium">Dərs Saatları:</label>
+          <select
+            name="lesson_type_hour_id"
+            value={formData.lesson_type_hour_id}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-lg"
+          >
+            <option value="">Seçin</option>
+            {lessonHours.map((lessonHour) => (
+              <option key={lessonHour.id} value={lessonHour.id}>
+                {lessonHour.hour}
               </option>
             ))}
           </select>

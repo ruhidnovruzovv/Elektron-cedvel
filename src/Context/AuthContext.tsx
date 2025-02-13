@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { getProfile } from '../api/service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -16,7 +16,7 @@ interface AuthContextType {
     roles: string[];
     permissions: string[];
   } | null;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -35,49 +35,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     permissions: string[];
   } | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const fetchProfile = async () => {
+    try {
+      const profileData = await getProfile();
+      setUser({
+        name: profileData.data.userData.name,
+        email: profileData.data.userData.email,
+        roles: profileData.data.userData.roles,
+        permissions: profileData.data.userData.permissions,
+      });
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setIsAuthenticated(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      const fetchProfile = async () => {
-        try {
-          const profileData = await getProfile();
-          setUser({
-            name: profileData.data.userData.name,
-            email: profileData.data.userData.email,
-            roles: profileData.data.userData.roles,
-            permissions: profileData.data.userData.permissions,
-          });
-          setIsAuthenticated(true);
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-          setIsAuthenticated(false);
-        }
-      };
       fetchProfile();
     } else {
       setIsAuthenticated(false);
     }
   }, []);
 
-  const login = (token: string) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProfile();
+    }
+  }, [location.pathname]);
+
+  const login = async (token: string) => {
     localStorage.setItem('token', token);
-    const fetchProfile = async () => {
-      try {
-        const profileData = await getProfile();
-        setIsAuthenticated(true);
-        setUser({
-          name: profileData.data.userData.name,
-          email: profileData.data.userData.email,
-          roles: profileData.data.userData.roles,
-          permissions: profileData.data.userData.permissions,
-        });
-        navigate('/');
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-    fetchProfile();
+    await fetchProfile();
+    navigate('/');
   };
 
   const logout = () => {

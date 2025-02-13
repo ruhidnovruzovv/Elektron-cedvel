@@ -78,7 +78,7 @@ const EditRole: React.FC = () => {
   );
 
   return (
-    <div className="">
+    <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold mb-6">Rolü Redaktə Et</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="mb-4 flex items-end">
@@ -94,14 +94,14 @@ const EditRole: React.FC = () => {
             name="roleName"
             type="text"
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
         <button
           type="button"
-          className="bg-indigo-600 text-white px-4 text-sm py-2 rounded-lg-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="bg-indigo-600 text-white px-4 text-sm py-2 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           onClick={handleUpdateRole}
         >
           Yenilə
@@ -112,7 +112,7 @@ const EditRole: React.FC = () => {
         {Object.keys(groupedPermissions).map((group) => (
           <div key={group} className="mb-4">
             <h4 className="text-lg font-semibold mb-2 capitalize">{group}</h4>
-            <div className="flex gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {groupedPermissions[group].map((permission) => (
                 <label key={permission.id} className="flex items-center">
                   <input

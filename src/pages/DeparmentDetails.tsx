@@ -13,6 +13,7 @@ interface Faculty {
   name: string;
 }
 
+
 interface Department {
   id: number;
   name: string;
@@ -61,14 +62,14 @@ const DepartmentDetails: React.FC = () => {
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold mb-6">Kafedra Məlumatları</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
           <h3 className="text-xl font-bold mb-4">Kafedra Məlumatları</h3>
           <p><strong>Ad:</strong> {department.name}</p>
           <p><strong>Fakültə:</strong> {department.faculty.name}</p>
           <p><strong>Yaradılma Tarixi:</strong> {new Date(department.created_at).toLocaleDateString()}</p>
           <p><strong>Yenilənmə Tarixi:</strong> {new Date(department.updated_at).toLocaleDateString()}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
           <h3 className="text-xl font-bold mb-4">Fənlər</h3>
           {department.disciplines.length > 0 ? (
             <ul>

@@ -166,7 +166,7 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">Ad</label>
         <input
           type="text"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -176,7 +176,7 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">Soyad</label>
         <input
           type="text"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={surname}
           onChange={(e) => setSurname(e.target.value)}
           required
@@ -186,7 +186,7 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">Ata adı</label>
         <input
           type="text"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={patronymic}
           onChange={(e) => setPatronymic(e.target.value)}
           required
@@ -196,7 +196,7 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">Vəzifə</label>
         <input
           type="text"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={duty}
           onChange={(e) => setDuty(e.target.value)}
           required
@@ -206,19 +206,34 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">İşçi növü</label>
         <input
           type="text"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={employeeType}
           onChange={(e) => setEmployeeType(e.target.value)}
           required
         />
       </div>
       <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Rol</label>
+        <select
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
+          value={roleId || ''}
+          onChange={handleRoleChange}
+          required
+        >
+          <option value="">Rol seçin</option>
+          {allRoles.map((role) => (
+            <option key={role.id} value={role.id}>
+              {role.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-4">
         <label className="block text-gray-700 mb-2">Fakültə</label>
         <select
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={facultyId || ''}
           onChange={(e) => setFacultyId(Number(e.target.value))}
-          required
         >
           <option value="">Fakültə seçin</option>
           {faculties.map((faculty) => (
@@ -242,7 +257,7 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">Email</label>
         <input
           type="email"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -252,28 +267,13 @@ const AddNewUser: React.FC = () => {
         <label className="block text-gray-700 mb-2">Şifrə</label>
         <input
           type="password"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">Rol</label>
-        <select
-          className="w-full px-3 py-2 border rounded-lg"
-          value={roleId || ''}
-          onChange={handleRoleChange}
-          required
-        >
-          <option value="">Rol seçin</option>
-          {allRoles.map((role) => (
-            <option key={role.id} value={role.id}>
-              {role.name}
-            </option>
-          ))}
-        </select>
-      </div>
+
       <button
         className="bg-blue-500 text-white px-4 py-2 rounded-lg"
         onClick={handleAddUser}

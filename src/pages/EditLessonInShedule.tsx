@@ -17,9 +17,10 @@ const EditLessonInShedule = () => {
   const [weekTypes, setWeekTypes] = useState([]);
   const [days, setDays] = useState([]);
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]); // Add this line
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [filteredDisciplines, setFilteredDisciplines] = useState([]);
+  const [lessonHours, setLessonHours] = useState([]);
   const navigate = useNavigate();
   const { id } = useParams();
   const [formData, setFormData] = useState({
@@ -35,6 +36,7 @@ const EditLessonInShedule = () => {
     day_id: '',
     user_id: '',
     discipline_id: '',
+    lesson_type_hour_id: '',
   });
 
   const fetchData = async () => {
@@ -52,6 +54,7 @@ const EditLessonInShedule = () => {
         facultiesResponse,
         departmentsResponse,
         disciplinesResponse,
+        lessonHoursResponse,
         scheduleResponse,
       ] = await Promise.all([
         get('/api/groups'),
@@ -66,6 +69,7 @@ const EditLessonInShedule = () => {
         get('/api/faculties'),
         get('/api/departments'),
         get('/api/disciplines'),
+        get('/api/lesson-hours'),
         get(`/api/schedules/${id}`),
       ]);
 
@@ -81,6 +85,7 @@ const EditLessonInShedule = () => {
       setFaculties(facultiesResponse.data);
       setDepartments(departmentsResponse.data);
       setDisciplines(disciplinesResponse.data);
+      setLessonHours(lessonHoursResponse.data);
 
       const schedule = scheduleResponse.data.schedule;
       setFormData({
@@ -126,6 +131,10 @@ const EditLessonInShedule = () => {
         discipline_id:
           disciplinesResponse.data.find(
             (discipline) => discipline.name === schedule.discipline_name,
+          )?.id || '',
+        lesson_type_hour_id:
+          lessonHoursResponse.data.find(
+            (lessonHour) => lessonHour.hour === schedule.lesson_type_hour,
           )?.id || '',
       });
     } catch (error) {
@@ -213,7 +222,6 @@ const EditLessonInShedule = () => {
     }
   };
 
-
   const getDayName = (dayNumber) => {
     const dayNames = {
       '1': 'Bazar ertəsi',
@@ -224,7 +232,6 @@ const EditLessonInShedule = () => {
     };
     return dayNames[dayNumber] || dayNumber;
   };
-
 
   return (
     <div className="grid md:grid-cols-2 m-5 md:m-10 gap-4">
@@ -241,7 +248,7 @@ const EditLessonInShedule = () => {
             name="faculty_id"
             value={formData.faculty_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg  dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {faculties.map((faculty) => (
@@ -257,7 +264,7 @@ const EditLessonInShedule = () => {
             name="department_id"
             value={formData.department_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {filteredDepartments.map((department) => (
@@ -273,7 +280,7 @@ const EditLessonInShedule = () => {
             name="group_id"
             value={formData.group_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {filteredGroups.map((group) => (
@@ -289,7 +296,7 @@ const EditLessonInShedule = () => {
             name="corp_id"
             value={formData.corp_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {corps.map((corp) => (
@@ -305,7 +312,7 @@ const EditLessonInShedule = () => {
             name="room_id"
             value={formData.room_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {filteredRooms.map((room) => (
@@ -321,7 +328,7 @@ const EditLessonInShedule = () => {
             name="lesson_type_id"
             value={formData.lesson_type_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {lessonTypes.map((lessonType) => (
@@ -337,7 +344,7 @@ const EditLessonInShedule = () => {
             name="hour_id"
             value={formData.hour_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {hours.map((hour) => (
@@ -353,7 +360,7 @@ const EditLessonInShedule = () => {
             name="semester_id"
             value={formData.semester_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {semesters.map((semester) => (
@@ -369,7 +376,7 @@ const EditLessonInShedule = () => {
             name="week_type_id"
             value={formData.week_type_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {weekTypes.map((weekType) => (
@@ -385,12 +392,13 @@ const EditLessonInShedule = () => {
             name="day_id"
             value={formData.day_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {days.map((day) => (
               <option key={day.id} value={day.id}>
-{getDayName(day.name)}              </option>
+                {getDayName(day.name)}
+              </option>
             ))}
           </select>
         </div>
@@ -400,7 +408,7 @@ const EditLessonInShedule = () => {
             name="user_id"
             value={formData.user_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {filteredUsers.map((user) => (
@@ -416,12 +424,28 @@ const EditLessonInShedule = () => {
             name="discipline_id"
             value={formData.discipline_id}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
           >
             <option value="">Seçin</option>
             {filteredDisciplines.map((discipline) => (
               <option key={discipline.id} value={discipline.id}>
                 {discipline.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block font-medium">Dərs Saatı:</label>
+          <select
+            name="lesson_type_hour_id"
+            value={formData.lesson_type_hour_id}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
+          >
+            <option value="">Seçin</option>
+            {lessonHours.map((lessonHour) => (
+              <option key={lessonHour.id} value={lessonHour.id}>
+                {lessonHour.hour}
               </option>
             ))}
           </select>
@@ -440,3 +464,7 @@ const EditLessonInShedule = () => {
 };
 
 export default EditLessonInShedule;
+
+
+
+

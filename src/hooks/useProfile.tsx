@@ -6,7 +6,7 @@ const useProfile = () => {
   if (!context) {
     throw new Error('useProfile must be used within an AuthProvider');
   }
-  return context.user;
+  return context;
 };
 
 export default useProfile;

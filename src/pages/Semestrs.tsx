@@ -6,6 +6,7 @@ import DeleteSemestrModal from '../components/Modals/Smester/DeleteSmester';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { FaRegEdit } from 'react-icons/fa';
 import { AiOutlineDelete } from 'react-icons/ai';
+import usePermissions from '../hooks/usePermissions';
 
 interface Semestr {
   id: number;
@@ -20,6 +21,11 @@ const Semestrs: React.FC = () => {
   const [isAddSemestrModalOpen, setIsAddSemestrModalOpen] = useState(false);
   const [isEditSemestrModalOpen, setIsEditSemestrModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const hasAddPermission = usePermissions('add_semester');
+  const hasEditPermission = usePermissions('edit_semester');
+  const hasDeletePermission = usePermissions('delete_semester');
+  const hasViewPermission = usePermissions('view_semester');
 
   useEffect(() => {
     fetchSemestrs();
@@ -103,12 +109,14 @@ const Semestrs: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Semestrlər</h2>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={openAddSemestrModal}
-      >
-        Yeni Semestr Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={openAddSemestrModal}
+        >
+          Yeni Semestr Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -136,18 +144,22 @@ const Semestrs: React.FC = () => {
                     {semestr.semester_num}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    <button
-                  className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                  onClick={() => handleEdit(semestr)}
-                    >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
-                    <button
-                  className="bg-red-500 text-white p-2 rounded-lg"
-                  onClick={() => openDeleteModal(semestr)}
-                    >
-                      <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
+                    {hasEditPermission && (
+                      <button
+                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => handleEdit(semestr)}
+                      >
+                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-lg"
+                        onClick={() => openDeleteModal(semestr)}
+                      >
+                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

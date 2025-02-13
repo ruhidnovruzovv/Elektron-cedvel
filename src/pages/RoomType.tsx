@@ -6,6 +6,7 @@ import DeleteRoomTypeModal from '../components/Modals/Room/DeleteRoomType';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
+import usePermissions from '../hooks/usePermissions';
 
 interface RoomType {
   id: number;
@@ -14,13 +15,16 @@ interface RoomType {
 
 const RoomType: React.FC = () => {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [selectedRoomType, setSelectedRoomType] = useState<RoomType | null>(
-    null,
-  );
+  const [selectedRoomType, setSelectedRoomType] = useState<RoomType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddRoomTypeModalOpen, setIsAddRoomTypeModalOpen] = useState(false);
   const [isEditRoomTypeModalOpen, setIsEditRoomTypeModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const hasAddPermission = usePermissions('add_room_type');
+  const hasEditPermission = usePermissions('edit_room_type');
+  const hasDeletePermission = usePermissions('delete_room_type');
+  const hasViewPermission = usePermissions('view_room_type');
 
   useEffect(() => {
     fetchRoomTypes();
@@ -104,12 +108,14 @@ const RoomType: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Otaq Tipleri</h2>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={openAddRoomTypeModal}
-      >
-        Yeni Otaq Tipi Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={openAddRoomTypeModal}
+        >
+          Yeni Otaq Tipi Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -133,18 +139,22 @@ const RoomType: React.FC = () => {
                     {roomType.name}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    <button
-                  className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                  onClick={() => handleEdit(roomType)}
-                    >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
-                    <button
-                  className="bg-red-500 text-white p-2 rounded-lg"
-                  onClick={() => openDeleteModal(roomType)}
-                    >
-                      <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
+                    {hasEditPermission && (
+                      <button
+                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => handleEdit(roomType)}
+                      >
+                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-lg"
+                        onClick={() => openDeleteModal(roomType)}
+                      >
+                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { get, getProfile } from '../api/service';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useNavigate } from 'react-router-dom';
+import usePermissions from '../hooks/usePermissions';
 
 interface Lesson {
   schedule_id: number;
@@ -16,6 +17,7 @@ interface Lesson {
   semester_num: string;
   week_type_name: string | null;
   group_name: string;
+  confirm_status: number;
 }
 
 interface Faculty {
@@ -48,6 +50,11 @@ const Schedule: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [userData, setUserData] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const hasAddPermission = usePermissions('add_schedule');
+  const hasEditPermission = usePermissions('edit_schedule');
+  const hasDeletePermission = usePermissions('delete_schedule');
+  const hasViewPermission = usePermissions('view_schedule');
 
   useEffect(() => {
     fetchProfile();
@@ -114,6 +121,10 @@ const Schedule: React.FC = () => {
     shiftHours: Hour[],
     lessons: { [key: string]: Lesson[] },
   ) => {
+    if (Object.keys(lessons).length === 0) {
+      return null;
+    }
+
     return (
       <div className="overflow-x-auto text-sm">
         <table className="min-w-full mb-5 mt-5 bg-white dark:bg-gray-700">
@@ -168,42 +179,43 @@ const Schedule: React.FC = () => {
                       (l) =>
                         l.day_name === day.name &&
                         l.hour_name === hour.name &&
-                        l.week_type_name === null,
+                        l.week_type_name === 'ümumi həftə',
                     );
+                    const lesson = singleLesson || upperWeekLesson || lowerWeekLesson;
+                    const isPending = lesson && lesson.confirm_status === 0;
                     return (
                       <td
                         key={`${day.id}-${hour.id}`}
                         className={`py-2 px-2 border-b border-r-2  border-gray-500 dark:border-gray-500 text-center cursor-pointer ${
                           hourIndex === shiftHours.length - 1 ? 'border-r-2' : ''
-                        }`}
+                        } ${isPending ? '' : ''}`}
                         style={{ minWidth: '150px', maxWidth: '200px', borderBottom: '2px solid gray' }}
                         onClick={() => {
-                          const lesson =
-                            singleLesson || upperWeekLesson || lowerWeekLesson;
                           if (lesson) {
                             navigate(`/schedule-lesson/${lesson.schedule_id}`);
                           }
                         }}
                       >
                         {singleLesson ? (
-                          <div className="w-full hover:text-blue-600 ">
-                            <div>{singleLesson.discipline_name}</div>
+                          <div className={`w-full hover:text-blue-600 ${isPending ? 'text-yellow-400' : ''}`}>                            <div>{singleLesson.discipline_name}</div>
                             <div>{singleLesson.user_name}</div>
                             <div>
                               {singleLesson.corp_name} -{' '}
                               {singleLesson.room_name}
                             </div>
                             <div>{singleLesson.lesson_type_name}</div>
+                            {isPending && <div>icazəli otaq</div>}
                           </div>
                         ) : upperWeekLesson || lowerWeekLesson ? (
                           <div className="flex flex-col h-full">
                             {upperWeekLesson ? (
                               <div
-                                className={
-                                  lowerWeekLesson
-                                    ? 'border-b  dark:border-gray-500 hover:text-blue-600 border-gray-300'
-                                    : ' hover:text-blue-600 '
-                                }
+                              className={
+                                lowerWeekLesson
+                                  ? `border-b dark:border-gray-500 hover:text-blue-600 border-gray-300 ${isPending ? 'text-yellow-400' : ''}`
+                                  : `hover:text-blue-600 ${isPending ? 'text-yellow-400' : ''}`
+                              }
+                              
                               >
                                 <div>{upperWeekLesson.discipline_name}</div>
                                 <div>{upperWeekLesson.user_name}</div>
@@ -214,6 +226,7 @@ const Schedule: React.FC = () => {
                                 <div>
                                   {upperWeekLesson.lesson_type_name}
                                 </div>
+                                {isPending && <div>icazəli otaq</div>}
                               </div>
                             ) : lowerWeekLesson ? (
                               <div className="mb-2">
@@ -222,11 +235,12 @@ const Schedule: React.FC = () => {
                             ) : null}
                             {lowerWeekLesson ? (
                               <div
-                                className={
-                                  upperWeekLesson
-                                    ? 'hover:text-blue-600'
-                                    : 'border-t-2 pt-2 hover:text-blue-600 border-gray-300'
-                                }
+                              className={
+                                upperWeekLesson
+                                  ? `hover:text-blue-600 ${isPending ? 'text-yellow-400' : ''}`
+                                  : `border-t-2 pt-2 hover:text-blue-600 border-gray-300 ${isPending ? 'text-yellow-400' : ''}`
+                              }
+                              
                               >
                                 <div>{lowerWeekLesson.discipline_name}</div>
                                 <div>{lowerWeekLesson.user_name}</div>
@@ -236,6 +250,7 @@ const Schedule: React.FC = () => {
                                 </div>
                                 <div>
                                   {lowerWeekLesson.lesson_type_name}</div>
+                                {isPending && <div>icazəli otaq</div>}
                               </div>
                             ) : upperWeekLesson ? (
                               <div className="border-t-2 border-gray-300">
@@ -275,12 +290,14 @@ const Schedule: React.FC = () => {
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Dərs Cədvəli</h2>
       <div className="flex w-full justify-between items-center  mb-6">
-        <button
-          onClick={() => navigate('/add-schedule-lesson')}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg mb-4"
-        >
-          Dərs Əlavə Et
-        </button>
+        {hasAddPermission && (
+          <button
+            onClick={() => navigate('/add-schedule-lesson')}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg mb-4"
+          >
+            Dərs Əlavə Et
+          </button>
+        )}
       </div>
       {loading ? (
         <div className="flex justify-center items-center">

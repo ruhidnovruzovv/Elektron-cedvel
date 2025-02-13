@@ -7,6 +7,7 @@ import usePermissions from '../hooks/usePermissions';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
 import { PiEyeLight } from 'react-icons/pi';
+import { ClipLoader } from 'react-spinners'; // react-spinners'dan ClipLoader'ı ekleyin
 
 interface Permission {
   id: number;
@@ -25,6 +26,7 @@ const RoleTable: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true); // Yükleme durumunu ekleyin
   const navigate = useNavigate();
   const hasDeleteRole = usePermissions('delete_role');
   const hasEditRole = usePermissions('edit_role');
@@ -34,11 +36,14 @@ const RoleTable: React.FC = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
+        setLoading(true); // Yükleme durumunu true olarak ayarlayın
         const response = await get('/api/roles');
         setRoles(response.data);
+        setLoading(false); // Yükleme durumunu false olarak ayarlayın
       } catch (err: any) {
         console.error('Error fetching roles:', err);
         setError(err.message || 'An error occurred');
+        setLoading(false); // Yükleme durumunu false olarak ayarlayın
       }
     };
 
@@ -82,54 +87,60 @@ const RoleTable: React.FC = () => {
           </button>
         </div>
       )}
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr className="bg-[#e3e3e3] dark:bg-gray-800">
-            <th className="py-2 px-4 border-b">Rol</th>
-            <th className="py-2 px-4 border-b">İcazələr</th>
-            <th className="py-2 px-4 border-b">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {roles.map((role) => (
-            <tr
-              key={role.id}
-              className="hover:bg-gray-100 dark:bg-gray-700 transition-all duration-300 ease-linear"
-            >
-              <td className="py-2 px-4 border-b text-center">{role.name}</td>
-              <td className="py-2 px-4 border-b text-center">
-                {role.permissions.length} İcazə
-              </td>
-              <td className="py-2 px-4 border-b text-center">
-                {hasEditRole && (
-                  <button
-                    className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                    onClick={() => navigate(`/edit-role/${role.id}`)}
-                  >
-                    <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                  </button>
-                )}
-                {hasDeleteRole && (
-                  <button
-                    className="bg-red-500 text-white p-2 mr-2 rounded-lg"
-                    onClick={() => openDeleteModal(role)}
-                  >
-                    <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                  </button>
-                )}
-                {hasViewRole && (
-                  <button
-                    className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
-                    onClick={() => openPermissionsModal(role)}
-                  >
-                    <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
-                  </button>
-                )}
-              </td>
+      {loading ? (
+        <div className="flex justify-center items-center">
+          <ClipLoader color={'#123abc'} size={50} /> {/* Bu örnek bir spinner. */}
+        </div>
+      ) : (
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr className="bg-[#e3e3e3] dark:bg-gray-800">
+              <th className="py-2 px-4 border-b">Rol</th>
+              <th className="py-2 px-4 border-b">İcazələr</th>
+              <th className="py-2 px-4 border-b">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {roles.map((role) => (
+              <tr
+                key={role.id}
+                className="hover:bg-gray-100 dark:bg-gray-700 transition-all duration-300 ease-linear"
+              >
+                <td className="py-2 px-4 border-b text-center">{role.name}</td>
+                <td className="py-2 px-4 border-b text-center">
+                  {role.permissions.length} İcazə
+                </td>
+                <td className="py-2 px-4 border-b text-center">
+                  {hasEditRole && (
+                    <button
+                      className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                      onClick={() => navigate(`/edit-role/${role.id}`)}
+                    >
+                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                    </button>
+                  )}
+                  {hasDeleteRole && (
+                    <button
+                      className="bg-red-500 text-white p-2 mr-2 rounded-lg"
+                      onClick={() => openDeleteModal(role)}
+                    >
+                      <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                    </button>
+                  )}
+                  {hasViewRole && (
+                    <button
+                      className="bg-[#d29a00] text-white p-2 rounded-lg mr-2"
+                      onClick={() => openPermissionsModal(role)}
+                    >
+                      <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <DeleteModal
         isOpen={isDeleteModalOpen}
@@ -149,3 +160,4 @@ const RoleTable: React.FC = () => {
 };
 
 export default RoleTable;
+

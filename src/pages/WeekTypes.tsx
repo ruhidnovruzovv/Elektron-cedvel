@@ -6,6 +6,7 @@ import DeleteWeekTypeModal from '../components/Modals/Week/DeleteWeekType';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { FaRegEdit } from 'react-icons/fa';
 import { AiOutlineDelete } from 'react-icons/ai';
+import usePermissions from '../hooks/usePermissions';
 
 interface WeekType {
   id: number;
@@ -14,13 +15,15 @@ interface WeekType {
 
 const WeekTypes: React.FC = () => {
   const [weekTypes, setWeekTypes] = useState<WeekType[]>([]);
-  const [selectedWeekType, setSelectedWeekType] = useState<WeekType | null>(
-    null,
-  );
+  const [selectedWeekType, setSelectedWeekType] = useState<WeekType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddWeekTypeModalOpen, setIsAddWeekTypeModalOpen] = useState(false);
   const [isEditWeekTypeModalOpen, setIsEditWeekTypeModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const hasAddPermission = usePermissions('add_week_type');
+  const hasEditPermission = usePermissions('edit_week_type');
+  const hasDeletePermission = usePermissions('delete_week_type');
 
   useEffect(() => {
     fetchWeekTypes();
@@ -104,12 +107,14 @@ const WeekTypes: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Həftə Tipleri</h2>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={openAddWeekTypeModal}
-      >
-        Yeni Həftə Tipi Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={openAddWeekTypeModal}
+        >
+          Yeni Həftə Tipi Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -133,18 +138,22 @@ const WeekTypes: React.FC = () => {
                     {weekType.name}
                   </td>
                   <td className="py-2 px-4 border-b text-center">
-                    <button
-                      className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                      onClick={() => handleEdit(weekType)}
-                    >
-                      <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
-                    <button
-                      className="bg-red-500 text-white p-2 rounded-lg"
-                      onClick={() => openDeleteModal(weekType)}
-                    >
-                      <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                    </button>
+                    {hasEditPermission && (
+                      <button
+                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                        onClick={() => handleEdit(weekType)}
+                      >
+                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        className="bg-red-500 text-white p-2 rounded-lg"
+                        onClick={() => openDeleteModal(weekType)}
+                      >
+                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

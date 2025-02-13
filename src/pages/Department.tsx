@@ -8,6 +8,9 @@ import DeleteDepartmentModal from './../components/Modals/Department/DeleteDepar
 import AddDepartmentModal from './../components/Modals/Department/AddDepartmentModal';
 import EditDepartmentModal from './../components/Modals/Department/EditDepartment';
 import { useNavigate } from 'react-router-dom';
+import usePermissions from '../hooks/usePermissions';
+import Swal from 'sweetalert2';
+
 
 interface Discipline {
   id: number;
@@ -42,6 +45,11 @@ const Departments: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const hasAddPermission = usePermissions('add_department');
+  const hasEditPermission = usePermissions('edit_department');
+  const hasDeletePermission = usePermissions('delete_department');
+  const hasViewPermission = usePermissions('view_department');
+
   useEffect(() => {
     fetchDepartments();
   }, []);
@@ -71,8 +79,20 @@ const Departments: React.FC = () => {
           departments.filter((d) => d.id !== selectedDepartment.id),
         );
         closeDeleteModal();
+        Swal.fire({
+          title: 'Silindi!',
+          text: 'Kafedra uğurla silindi.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
       } catch (error) {
         console.error('Error deleting department:', error);
+        Swal.fire({
+          title: 'Xəta!',
+          text: error.response?.data?.message || 'Fakültəni silərkən xəta baş verdi.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     }
   };
@@ -141,12 +161,14 @@ const Departments: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6">Kafedralar</h2>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
-        onClick={openAddDepartmentModal}
-      >
-        Yeni Kafedra Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={openAddDepartmentModal}
+        >
+          Yeni Kafedra Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -181,24 +203,30 @@ const Departments: React.FC = () => {
                   </td>
                   <td className="py-2 px-4 border-b">
                     <div className="flex flex-col items-center md:flex-row md:justify-center gap-2">
-                      <button
-                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                        onClick={() => handleEdit(department)}
-                      >
-                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
-                      <button
-                        className="bg-red-500 text-white p-2 rounded-lg"
-                        onClick={() => openDeleteModal(department)}
-                      >
-                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
-                      <button
-                        className="bg-[#d29a00] text-white p-2 rounded-lg"
-                        onClick={() => toDetailsPage(department)}
-                      >
-                        <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
+                      {hasEditPermission && (
+                        <button
+                          className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                          onClick={() => handleEdit(department)}
+                        >
+                          <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
+                      {hasDeletePermission && (
+                        <button
+                          className="bg-red-500 text-white p-2 rounded-lg"
+                          onClick={() => openDeleteModal(department)}
+                        >
+                          <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
+                      {hasViewPermission && (
+                        <button
+                          className="bg-[#d29a00] text-white p-2 rounded-lg"
+                          onClick={() => toDetailsPage(department)}
+                        >
+                          <PiEyeLight className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

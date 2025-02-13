@@ -6,6 +6,9 @@ import DeleteLessonModal from '../components/Modals/Lesson/DeleteLesson';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { FaRegEdit } from 'react-icons/fa';
+import usePermissions from '../hooks/usePermissions';
+import Swal from 'sweetalert2';
+
 
 interface Lesson {
   id: number;
@@ -23,6 +26,11 @@ const Lessons: React.FC = () => {
   const [isAddLessonModalOpen, setIsAddLessonModalOpen] = useState(false);
   const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const hasAddPermission = usePermissions('add_discipline');
+  const hasEditPermission = usePermissions('edit_discipline');
+  const hasDeletePermission = usePermissions('delete_discipline');
+  const hasViewPermission = usePermissions('view_discipline');
 
   useEffect(() => {
     fetchLessons();
@@ -51,8 +59,20 @@ const Lessons: React.FC = () => {
         await del(`/api/disciplines/${selectedLesson.id}`);
         setLessons(lessons.filter((l) => l.id !== selectedLesson.id));
         closeDeleteModal();
+        Swal.fire({
+          title: 'Silindi!',
+          text: 'Fənn uğurla silindi.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
       } catch (error) {
         console.error('Error deleting lesson:', error);
+        Swal.fire({
+          title: 'Xəta!',
+          text: error.response?.data?.message || 'Fakültəni silərkən xəta baş verdi.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     }
   };
@@ -115,12 +135,14 @@ const Lessons: React.FC = () => {
   return (
     <div className="">
       <h2 className="text-lg md:text-2xl font-bold mb-4 md:mb-6">Fənnlər</h2>
-      <button
-        className="bg-green-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg mb-4"
-        onClick={openAddLessonModal}
-      >
-        Yeni Fənn Əlavə Et
-      </button>
+      {hasAddPermission && (
+        <button
+          className="bg-green-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg mb-4"
+          onClick={openAddLessonModal}
+        >
+          Yeni Fənn Əlavə Et
+        </button>
+      )}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center">
@@ -149,18 +171,22 @@ const Lessons: React.FC = () => {
                   </td>
                   <td className="py-2  px-2 border-b text-center">
                     <div>
-                      <button
-                        className="bg-blue-500 text-white p-2 rounded-lg mr-2"
-                        onClick={() => handleEdit(lesson)}
-                      >
-                        <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
-                      <button
-                        className="bg-red-500 text-white p-2 rounded-lg"
-                        onClick={() => openDeleteModal(lesson)}
-                      >
-                        <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
-                      </button>
+                      {hasEditPermission && (
+                        <button
+                          className="bg-blue-500 text-white p-2 rounded-lg mr-2"
+                          onClick={() => handleEdit(lesson)}
+                        >
+                          <FaRegEdit className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
+                      {hasDeletePermission && (
+                        <button
+                          className="bg-red-500 text-white p-2 rounded-lg"
+                          onClick={() => openDeleteModal(lesson)}
+                        >
+                          <AiOutlineDelete className="w-3 md:w-5 h-3 md:h-5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
